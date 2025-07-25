@@ -1,5 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @custom-variant dark (&:is(.dark *));
 
@@ -213,4 +214,17 @@ button:hover {
 
 .tab-inactive:hover {
   background-color: rgba(0, 194, 119, 0.2) !important;
+}
+
+/* Remove green highlight for AccordionTrigger */
+[data-radix-accordion-trigger] {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+[data-radix-accordion-trigger]:hover,
+[data-radix-accordion-trigger]:focus,
+[data-radix-accordion-trigger][data-state="open"] {
+  background-color: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
 }
