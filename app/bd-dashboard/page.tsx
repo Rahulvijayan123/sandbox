@@ -16,6 +16,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export default function Dashboard() {
   const [company, setCompany] = useState<string>("")
   const [rationale, setRationale] = useState<string>("")
+  const [confidenceScore, setConfidenceScore] = useState<number | null>(null)
+  const [strategicFitScore, setStrategicFitScore] = useState<number | null>(null)
+  const [alternativeBuyers, setAlternativeBuyers] = useState<string[]>([])
   const [showFullBlur, setShowFullBlur] = useState(false)
 
   useEffect(() => {
@@ -24,8 +27,11 @@ export default function Dashboard() {
     if (perplexityResult) {
       try {
         const parsed = JSON.parse(perplexityResult)
-        setCompany(parsed.company || "")
+        setCompany(parsed.buyer || "")
         setRationale(parsed.rationale || "")
+        setConfidenceScore(parsed.confidence_score)
+        setStrategicFitScore(parsed.strategic_fit_score)
+        setAlternativeBuyers(parsed.alternative_buyers || [])
       } catch {}
     }
   }, [])
@@ -60,8 +66,44 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="bg-white p-6 rounded-lg shadow-sm">
+              {/* Enhanced Metrics Display */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {confidenceScore !== null && (
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{Math.round(confidenceScore * 100)}%</div>
+                    <div className="text-sm text-blue-700">Confidence Score</div>
+                  </div>
+                )}
+                {strategicFitScore !== null && (
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{Math.round(strategicFitScore * 100)}%</div>
+                    <div className="text-sm text-green-700">Strategic Fit</div>
+                  </div>
+                )}
+                {alternativeBuyers.length > 0 && (
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">{alternativeBuyers.length}</div>
+                    <div className="text-sm text-purple-700">Alternative Buyers</div>
+                  </div>
+                )}
+              </div>
+              
               <h3 className="text-xl font-semibold mb-4">Strategic Rationale</h3>
               <p className="text-slate-700 leading-relaxed text-lg mb-4">{rationale || "Rationale will appear here."}</p>
+              
+              {/* Alternative Buyers Display */}
+              {alternativeBuyers.length > 0 && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="text-lg font-semibold mb-2 text-slate-800">Alternative Buyers</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {alternativeBuyers.map((buyer, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm">
+                        {buyer}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Blurred overflow section to suggest more content */}
               <div className={showFullBlur ? "relative h-[700px] overflow-hidden rounded-lg mt-6" : "relative h-32 overflow-hidden rounded-lg mt-6"}>
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-10" />

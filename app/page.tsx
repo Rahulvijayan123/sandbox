@@ -54,13 +54,30 @@ export default function BiotechPlayground() {
           console.log("[BD Agent] API response status:", res.status)
           if (res.ok) {
             const data = await res.json()
-            console.log("[BD Agent] API response JSON:", data)
-            localStorage.setItem("perplexityResult", JSON.stringify(data))
-            router.push("/bd-dashboard")
+                      console.log("[BD Agent] API response JSON:", data)
+          
+          // Handle the new response format
+          if (data.error) {
+            setError(data.error)
+            return
+          }
+          
+          localStorage.setItem("perplexityResult", JSON.stringify(data))
+          router.push("/bd-dashboard")
           } else {
             const errorText = await res.text()
             console.error("[BD Agent] API error response:", errorText)
-            setError("Failed to get response from Perplexity. " + errorText)
+            
+            try {
+              const errorData = JSON.parse(errorText)
+              if (errorData.error && errorData.details) {
+                setError(`Validation Error: ${errorData.error}. Please check your input.`)
+              } else {
+                setError("Failed to get response from Perplexity. " + errorData.error)
+              }
+            } catch {
+              setError("Failed to get response from Perplexity. " + errorText)
+            }
           }
         } catch (err) {
           console.error("[BD Agent] Fetch error:", err)
