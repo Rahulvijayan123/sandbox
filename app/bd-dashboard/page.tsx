@@ -22,6 +22,9 @@ export default function Dashboard() {
   const [revenuePerformance, setRevenuePerformance] = useState<any>(null)
   const [scientificCapabilities, setScientificCapabilities] = useState<any>(null)
   const [dealActivity, setDealActivity] = useState<any>(null)
+  const [regulatoryStatus, setRegulatoryStatus] = useState<any>(null)
+  const [supplyChainRisk, setSupplyChainRisk] = useState<any>(null)
+  const [marketAnalysis, setMarketAnalysis] = useState<any>(null)
   const [showFullBlur, setShowFullBlur] = useState(false)
 
   useEffect(() => {
@@ -38,6 +41,9 @@ export default function Dashboard() {
         setRevenuePerformance(parsed.revenue_performance)
         setScientificCapabilities(parsed.scientific_capabilities)
         setDealActivity(parsed.deal_activity)
+        setRegulatoryStatus(parsed.regulatory_status)
+        setSupplyChainRisk(parsed.supply_chain_risk)
+        setMarketAnalysis(parsed.market_analysis)
       } catch {}
     }
   }, [])
@@ -423,13 +429,46 @@ export default function Dashboard() {
                 </AccordionTrigger>
                 <AccordionContent className="pt-4">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Regulatory Status & Milestones (fix: only blur content, not title) */}
+                    {/* Regulatory Status & Milestones */}
                     <Card>
                       <CardHeader>
                         <CardTitle>Regulatory Status & Milestones</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="relative">
+                        {regulatoryStatus ? (
+                          <div className="space-y-4">
+                            {regulatoryStatus.clinical_phase && (
+                              <div>
+                                <h4 className="font-semibold text-slate-800 mb-2">Clinical Phase</h4>
+                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.clinical_phase}</p>
+                              </div>
+                            )}
+                            {regulatoryStatus.fda_submissions && (
+                              <div>
+                                <h4 className="font-semibold text-slate-800 mb-2">FDA Submissions</h4>
+                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.fda_submissions}</p>
+                              </div>
+                            )}
+                            {regulatoryStatus.ema_submissions && (
+                              <div>
+                                <h4 className="font-semibold text-slate-800 mb-2">EMA Submissions</h4>
+                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.ema_submissions}</p>
+                              </div>
+                            )}
+                            {regulatoryStatus.designations && (
+                              <div>
+                                <h4 className="font-semibold text-slate-800 mb-2">Designations</h4>
+                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.designations}</p>
+                              </div>
+                            )}
+                            {regulatoryStatus.milestones && (
+                              <div>
+                                <h4 className="font-semibold text-slate-800 mb-2">Key Milestones</h4>
+                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.milestones}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
                           <div className="blur-sm select-none text-slate-400" aria-hidden="true">
                             <div className="space-y-2">
                               <p className="font-normal text-base leading-relaxed">The program has achieved several key regulatory milestones, including successful IND submission, orphan drug designation, and fast track status in multiple jurisdictions. Ongoing interactions with regulatory agencies have resulted in clear guidance for pivotal trial design and expedited review pathways.</p>
@@ -441,8 +480,7 @@ export default function Dashboard() {
                               </ul>
                             </div>
                           </div>
-                          <div className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true"></div>
-                        </div>
+                        )}
                       </CardContent>
                     </Card>
                     {/* Clinical Trial Progress & Data Availability (paragraph + fake line chart) */}
@@ -675,7 +713,7 @@ export default function Dashboard() {
                       {/* Current & Projected TAM (with assumptions) (Blurred Content) */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Current & Projected TAM (with assumptions)</CardTitle>
+                          <CardTitle>Supply Chain Risk and Disruption Profile</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="blur-sm select-none text-slate-400" aria-hidden="true">
@@ -700,6 +738,47 @@ export default function Dashboard() {
                               <li>Integrated sales force</li>
                             </ul>
                           </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Current and Projected TAM */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Current and Projected TAM</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {marketAnalysis ? (
+                            <div className="space-y-4">
+                              {marketAnalysis.current_tam && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Current TAM</h4>
+                                  <p className="text-slate-700 leading-relaxed">{marketAnalysis.current_tam}</p>
+                                </div>
+                              )}
+                              {marketAnalysis.projected_tam && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Projected TAM</h4>
+                                  <p className="text-slate-700 leading-relaxed">{marketAnalysis.projected_tam}</p>
+                                </div>
+                              )}
+                              {marketAnalysis.cagr && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">CAGR</h4>
+                                  <p className="text-slate-700 leading-relaxed">{marketAnalysis.cagr}</p>
+                                </div>
+                              )}
+                              {marketAnalysis.geographic_breakdown && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Geographic Breakdown</h4>
+                                  <p className="text-slate-700 leading-relaxed">{marketAnalysis.geographic_breakdown}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <p className="mb-2">Extensive market analysis quantifies the total addressable market (TAM) across all relevant segments. Growth projections are supported by demographic trends, innovation adoption, and expanding treatment paradigms. Detailed assumptions and sensitivity analyses underpin robust forecasting. The company's addressable share is expected to increase through portfolio expansion and strategic partnerships.</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                       {/* IR & BD Presentation Takeaways (Blurred Content) */}

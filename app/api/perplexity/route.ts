@@ -36,6 +36,25 @@ const ResponseSchema = z.object({
     recent_deals: z.string().optional(),
     partnerships: z.string().optional(),
     investment_focus: z.string().optional()
+  }).optional(),
+  regulatory_status: z.object({
+    clinical_phase: z.string().optional(),
+    fda_submissions: z.string().optional(),
+    ema_submissions: z.string().optional(),
+    designations: z.string().optional(),
+    milestones: z.string().optional()
+  }).optional(),
+  supply_chain_risk: z.object({
+    geopolitical_exposure: z.string().optional(),
+    api_dependencies: z.string().optional(),
+    cmo_risks: z.string().optional(),
+    historical_disruptions: z.string().optional()
+  }).optional(),
+  market_analysis: z.object({
+    current_tam: z.string().optional(),
+    projected_tam: z.string().optional(),
+    cagr: z.string().optional(),
+    geographic_breakdown: z.string().optional()
   }).optional()
 })
 
@@ -373,6 +392,9 @@ TASK: Analyze this asset and provide comprehensive insights including:
 3. Scientific capabilities and research infrastructure
 4. Recent deal activity and M&A track record
 5. Pipeline alignment and synergy opportunities
+6. Regulatory status and milestones (FDA/EMA submissions, designations, clinical phase transitions)
+7. Supply chain risk and disruption profile (geopolitical exposure, API dependencies, CMO risks)
+8. Current and projected TAM (market sizing, CAGR, geographic breakdown)
 
 RESPONSE FORMAT (strict JSON):
 {
@@ -400,6 +422,25 @@ RESPONSE FORMAT (strict JSON):
     "recent_deals": "Recent M&A activity with deal values",
     "partnerships": "Strategic partnerships and collaborations",
     "investment_focus": "Investment priorities and strategic direction"
+  },
+  "regulatory_status": {
+    "clinical_phase": "Current clinical phase and timeline",
+    "fda_submissions": "FDA submissions, designations, and interactions",
+    "ema_submissions": "EMA submissions and regulatory status",
+    "designations": "Orphan drug, fast track, breakthrough therapy designations",
+    "milestones": "Key regulatory milestones and upcoming events"
+  },
+  "supply_chain_risk": {
+    "geopolitical_exposure": "Geopolitical risks and regional dependencies",
+    "api_dependencies": "API sourcing dependencies and suppliers",
+    "cmo_risks": "Contract manufacturing organization risks",
+    "historical_disruptions": "Past supply chain disruptions and lessons learned"
+  },
+  "market_analysis": {
+    "current_tam": "Current total addressable market size with sources",
+    "projected_tam": "Projected market size and growth forecasts",
+    "cagr": "Compound annual growth rate with timeframe",
+    "geographic_breakdown": "Market breakdown by geography and regions"
   }
 }`
 
@@ -417,7 +458,13 @@ RESPONSE FORMAT (strict JSON):
       "evaluatepharma.com",
       "clinicaltrials.gov",
       "fiercepharma.com",
-      "biospace.com"
+      "biospace.com",
+      "fda.gov",
+      "ema.europa.eu",
+      "statista.com",
+      "iqvia.com",
+      "biocentury.com",
+      "pharmatimes.com"
     ]
 
     // Set up web search parameters
