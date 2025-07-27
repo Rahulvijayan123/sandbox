@@ -19,6 +19,9 @@ export default function Dashboard() {
   const [confidenceScore, setConfidenceScore] = useState<number | null>(null)
   const [strategicFitScore, setStrategicFitScore] = useState<number | null>(null)
   const [alternativeBuyers, setAlternativeBuyers] = useState<string[]>([])
+  const [revenuePerformance, setRevenuePerformance] = useState<any>(null)
+  const [scientificCapabilities, setScientificCapabilities] = useState<any>(null)
+  const [dealActivity, setDealActivity] = useState<any>(null)
   const [showFullBlur, setShowFullBlur] = useState(false)
 
   useEffect(() => {
@@ -32,6 +35,9 @@ export default function Dashboard() {
         setConfidenceScore(parsed.confidence_score)
         setStrategicFitScore(parsed.strategic_fit_score)
         setAlternativeBuyers(parsed.alternative_buyers || [])
+        setRevenuePerformance(parsed.revenue_performance)
+        setScientificCapabilities(parsed.scientific_capabilities)
+        setDealActivity(parsed.deal_activity)
       } catch {}
     }
   }, [])
@@ -142,36 +148,82 @@ export default function Dashboard() {
                 <AccordionContent className="pt-4">
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Revenue Performance Card (Blurred Content) */}
+                      {/* Revenue Performance Card */}
                       <Card>
                         <CardHeader>
                           <CardTitle>Revenue Performance</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
-                            <p className="mb-2">Revenue for the period reached a record high, driven by strong sales across all business units. Growth was particularly notable in emerging markets, with double-digit increases in several key regions. The company continues to outperform industry benchmarks, maintaining a robust pipeline and expanding its market share. Strategic pricing initiatives and product launches contributed to sustained top-line growth, while operational efficiencies improved margins. Ongoing investments in digital transformation and supply chain optimization further enhanced financial performance.</p>
-                            <p className="mb-2">In addition, the company benefited from favorable currency exchange rates and a successful cost containment program. These factors, combined with a disciplined approach to capital allocation, have positioned the organization for continued growth in the coming quarters.</p>
-                          </div>
+                          {revenuePerformance ? (
+                            <div className="space-y-4">
+                              {revenuePerformance.recent_revenue && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Recent Revenue</h4>
+                                  <p className="text-slate-700 leading-relaxed">{revenuePerformance.recent_revenue}</p>
+                                </div>
+                              )}
+                              {revenuePerformance.growth_trends && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Growth Trends</h4>
+                                  <p className="text-slate-700 leading-relaxed">{revenuePerformance.growth_trends}</p>
+                                </div>
+                              )}
+                              {revenuePerformance.market_position && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Market Position</h4>
+                                  <p className="text-slate-700 leading-relaxed">{revenuePerformance.market_position}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <p className="mb-2">Revenue for the period reached a record high, driven by strong sales across all business units. Growth was particularly notable in emerging markets, with double-digit increases in several key regions. The company continues to outperform industry benchmarks, maintaining a robust pipeline and expanding its market share. Strategic pricing initiatives and product launches contributed to sustained top-line growth, while operational efficiencies improved margins. Ongoing investments in digital transformation and supply chain optimization further enhanced financial performance.</p>
+                              <p className="mb-2">In addition, the company benefited from favorable currency exchange rates and a successful cost containment program. These factors, combined with a disciplined approach to capital allocation, have positioned the organization for continued growth in the coming quarters.</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
-                      {/* Deal Activity Card (Blurred Content) */}
+                      {/* Deal Activity Card */}
                       <Card>
                         <CardHeader>
                           <CardTitle>Deal Activity</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
-                            <ul className="list-disc pl-6 text-xs mb-2">
-                              <li>Acquisition A: $1.2B</li>
-                              <li>Partnership B: $500M</li>
-                              <li>Acquisition C: $800M</li>
-                              <li>Collaboration D: $300M</li>
-                              <li>Licensing E: $150M</li>
-                              <li>Synergy realization: $200M</li>
-                              <li>New market entries: 3</li>
-                              <li>Pipeline expansion: 5 assets</li>
-                            </ul>
-                          </div>
+                          {dealActivity ? (
+                            <div className="space-y-4">
+                              {dealActivity.recent_deals && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Recent Deals</h4>
+                                  <p className="text-slate-700 leading-relaxed text-sm">{dealActivity.recent_deals}</p>
+                                </div>
+                              )}
+                              {dealActivity.partnerships && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Partnerships</h4>
+                                  <p className="text-slate-700 leading-relaxed text-sm">{dealActivity.partnerships}</p>
+                                </div>
+                              )}
+                              {dealActivity.investment_focus && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Investment Focus</h4>
+                                  <p className="text-slate-700 leading-relaxed text-sm">{dealActivity.investment_focus}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <ul className="list-disc pl-6 text-xs mb-2">
+                                <li>Acquisition A: $1.2B</li>
+                                <li>Partnership B: $500M</li>
+                                <li>Acquisition C: $800M</li>
+                                <li>Collaboration D: $300M</li>
+                                <li>Licensing E: $150M</li>
+                                <li>Synergy realization: $200M</li>
+                                <li>New market entries: 3</li>
+                                <li>Pipeline expansion: 5 assets</li>
+                              </ul>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </div>
@@ -198,43 +250,100 @@ export default function Dashboard() {
                 <AccordionContent className="pt-4">
                   <div className="space-y-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Scientific Capabilities Card (Blurred Content) */}
+                      {/* Scientific Capabilities Card */}
                       <Card>
                         <CardHeader>
                           <CardTitle>Scientific Capabilities</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
-                            <p className="mb-2">Our research team leverages state-of-the-art facilities and advanced analytics to drive innovation across multiple therapeutic areas. We have established a robust pipeline of novel therapies, supported by cross-functional collaboration and a commitment to scientific excellence. Ongoing investments in R&D ensure a continuous flow of breakthrough technologies and clinical solutions.</p>
-                            <ul className="list-disc pl-6 text-sm">
-                              <li>State-of-the-art research labs</li>
-                              <li>Cross-functional collaboration</li>
-                              <li>Continuous R&D investment</li>
-                              <li>Breakthrough technology pipeline</li>
-                            </ul>
-                          </div>
+                          {scientificCapabilities ? (
+                            <div className="space-y-4">
+                              {scientificCapabilities.research_infrastructure && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Research Infrastructure</h4>
+                                  <p className="text-slate-700 leading-relaxed">{scientificCapabilities.research_infrastructure}</p>
+                                </div>
+                              )}
+                              {scientificCapabilities.technology_platforms && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Technology Platforms</h4>
+                                  <p className="text-slate-700 leading-relaxed">{scientificCapabilities.technology_platforms}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <p className="mb-2">Our research team leverages state-of-the-art facilities and advanced analytics to drive innovation across multiple therapeutic areas. We have established a robust pipeline of novel therapies, supported by cross-functional collaboration and a commitment to scientific excellence. Ongoing investments in R&D ensure a continuous flow of breakthrough technologies and clinical solutions.</p>
+                              <ul className="list-disc pl-6 text-sm">
+                                <li>State-of-the-art research labs</li>
+                                <li>Cross-functional collaboration</li>
+                                <li>Continuous R&D investment</li>
+                                <li>Breakthrough technology pipeline</li>
+                              </ul>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
-                      {/* Key Scientific Metrics Card (Blurred Content) */}
+                      {/* Key Scientific Metrics Card */}
                       <Card>
                         <CardHeader>
                           <CardTitle>Key Scientific Metrics</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
-                            <table className="w-full text-xs mb-2">
-                              <thead>
-                                <tr><th>Metric</th><th>Value</th></tr>
-                              </thead>
-                              <tbody>
-                                <tr><td>Patents Filed</td><td>1,200+</td></tr>
-                                <tr><td>Active Trials</td><td>85</td></tr>
-                                <tr><td>FDA Approvals</td><td>14</td></tr>
-                                <tr><td>Publications</td><td>300+</td></tr>
-                              </tbody>
-                            </table>
-                            <p className="text-xs">Metrics reflect the most recent reporting period and are subject to change as new data becomes available.</p>
-                          </div>
+                          {scientificCapabilities?.key_metrics ? (
+                            <div className="space-y-4">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b">
+                                    <th className="text-left font-semibold text-slate-800">Metric</th>
+                                    <th className="text-left font-semibold text-slate-800">Value</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="text-slate-700">
+                                  {scientificCapabilities.key_metrics.patents_filed && (
+                                    <tr className="border-b">
+                                      <td className="py-2">Patents Filed</td>
+                                      <td className="py-2">{scientificCapabilities.key_metrics.patents_filed}</td>
+                                    </tr>
+                                  )}
+                                  {scientificCapabilities.key_metrics.active_trials && (
+                                    <tr className="border-b">
+                                      <td className="py-2">Active Trials</td>
+                                      <td className="py-2">{scientificCapabilities.key_metrics.active_trials}</td>
+                                    </tr>
+                                  )}
+                                  {scientificCapabilities.key_metrics.fda_approvals && (
+                                    <tr className="border-b">
+                                      <td className="py-2">FDA Approvals</td>
+                                      <td className="py-2">{scientificCapabilities.key_metrics.fda_approvals}</td>
+                                    </tr>
+                                  )}
+                                  {scientificCapabilities.key_metrics.publications && (
+                                    <tr className="border-b">
+                                      <td className="py-2">Publications</td>
+                                      <td className="py-2">{scientificCapabilities.key_metrics.publications}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                              <p className="text-xs text-slate-600">Metrics reflect the most recent reporting period and are subject to change as new data becomes available.</p>
+                            </div>
+                          ) : (
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <table className="w-full text-xs mb-2">
+                                <thead>
+                                  <tr><th>Metric</th><th>Value</th></tr>
+                                </thead>
+                                <tbody>
+                                  <tr><td>Patents Filed</td><td>1,200+</td></tr>
+                                  <tr><td>Active Trials</td><td>85</td></tr>
+                                  <tr><td>FDA Approvals</td><td>14</td></tr>
+                                  <tr><td>Publications</td><td>300+</td></tr>
+                                </tbody>
+                              </table>
+                              <p className="text-xs">Metrics reflect the most recent reporting period and are subject to change as new data becomes available.</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </div>

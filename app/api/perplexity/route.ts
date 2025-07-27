@@ -16,7 +16,27 @@ const ResponseSchema = z.object({
   rationale: z.string().optional(),
   confidence_score: z.number().optional(),
   strategic_fit_score: z.number().optional(),
-  alternative_buyers: z.array(z.string()).optional()
+  alternative_buyers: z.array(z.string()).optional(),
+  revenue_performance: z.object({
+    recent_revenue: z.string().optional(),
+    growth_trends: z.string().optional(),
+    market_position: z.string().optional()
+  }).optional(),
+  scientific_capabilities: z.object({
+    research_infrastructure: z.string().optional(),
+    key_metrics: z.object({
+      patents_filed: z.string().optional(),
+      active_trials: z.string().optional(),
+      fda_approvals: z.string().optional(),
+      publications: z.string().optional()
+    }).optional(),
+    technology_platforms: z.string().optional()
+  }).optional(),
+  deal_activity: z.object({
+    recent_deals: z.string().optional(),
+    partnerships: z.string().optional(),
+    investment_focus: z.string().optional()
+  }).optional()
 })
 
 type InputData = z.infer<typeof InputSchema>
@@ -334,7 +354,7 @@ export async function POST(req: NextRequest) {
       return `${buyer.name}: Focus areas: ${focus}, Pipeline gaps: ${gaps}, Recent deals: ${deals}, Cash: ${cash}, Deal tolerance: ${tolerance}`
     }).join('\n')
     
-    const enhancedPrompt = `You are a senior business development expert in pharmaceutical M&A. Analyze this asset and recommend a buyer.
+    const enhancedPrompt = `You are a senior business development expert in pharmaceutical M&A with deep knowledge of company pipelines, strategic priorities, and deal-making patterns. Conduct comprehensive research to provide evidence-based analysis.
 
 ASSET DETAILS:
 - Therapeutic Area: ${enrichedData.therapeuticArea}
@@ -346,15 +366,41 @@ ASSET DETAILS:
 TOP POTENTIAL BUYERS:
 ${buyerContext}
 
-TASK: Select the best strategic buyer from the list above and provide a rationale.
+TASK: Analyze this asset and provide comprehensive insights including:
+
+1. Strategic buyer recommendation with detailed rationale
+2. Revenue performance analysis for the recommended buyer
+3. Scientific capabilities and research infrastructure
+4. Recent deal activity and M&A track record
+5. Pipeline alignment and synergy opportunities
 
 RESPONSE FORMAT (strict JSON):
 {
   "buyer": "Company Name",
-  "rationale": "Strategic rationale",
+  "rationale": "Detailed strategic rationale with evidence",
   "confidence_score": 0.8,
   "strategic_fit_score": 0.8,
-  "alternative_buyers": ["Company1", "Company2"]
+  "alternative_buyers": ["Company1", "Company2"],
+  "revenue_performance": {
+    "recent_revenue": "Detailed revenue analysis with specific figures",
+    "growth_trends": "Revenue growth trends and drivers",
+    "market_position": "Market position and competitive analysis"
+  },
+  "scientific_capabilities": {
+    "research_infrastructure": "Detailed research capabilities and facilities",
+    "key_metrics": {
+      "patents_filed": "Number with year",
+      "active_trials": "Number with therapeutic areas",
+      "fda_approvals": "Number with recent examples",
+      "publications": "Number with impact factor"
+    },
+    "technology_platforms": "Key technology platforms and innovations"
+  },
+  "deal_activity": {
+    "recent_deals": "Recent M&A activity with deal values",
+    "partnerships": "Strategic partnerships and collaborations",
+    "investment_focus": "Investment priorities and strategic direction"
+  }
 }`
 
     const apiKey = process.env.PERPLEXITY_API_KEY
@@ -363,23 +409,50 @@ RESPONSE FORMAT (strict JSON):
       return NextResponse.json({ error: 'Missing Perplexity API key.' }, { status: 500 })
     }
 
-    // Enhanced LLM call with better parameters
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    // Enhanced model selection and parameters
+    const model = 'sonar-deep-research'
+    const isDeep = model === 'sonar-deep-research'
+    
+    const domainAllowlist = [
+      "evaluatepharma.com",
+      "clinicaltrials.gov",
+      "fiercepharma.com",
+      "biospace.com",
+      "pharmatimes.com",
+      "pharmaceutical-journal.com",
+      "reuters.com",
+      "bloomberg.com",
+      "statnews.com",
+      "endpts.com"
+    ]
+
+    // Set up web search parameters
+    const webSearchOptions = {
+      search_context_size: isDeep ? "high" : "medium"
+    }
+
+    const requestBody = {
+      model,
+      messages: [
+        { role: 'system', content: 'You are a business development expert in pharma M&A. Provide precise, evidence-based analysis with comprehensive research.' },
+        { role: 'user', content: enhancedPrompt },
+      ],
+      max_tokens: 4000,
+      temperature: 0.1,
+      reasoning_effort: isDeep ? "high" : "medium",
+      web_search_options: webSearchOptions,
+      search_recency_filter: "year",
+      search_domain_filter: domainAllowlist
+    }
+
+    // Enhanced LLM call with deep research parameters
+    let response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'sonar-pro',
-        messages: [
-          { role: 'system', content: 'You are a business development expert in pharma M&A. Provide precise, evidence-based analysis.' },
-          { role: 'user', content: enhancedPrompt },
-        ],
-        max_tokens: 1024,
-        temperature: 0.2,
-        top_p: 0.8
-      }),
+      body: JSON.stringify(requestBody)
     })
     
     console.log('[API] Perplexity API response status:', response.status)
@@ -389,8 +462,44 @@ RESPONSE FORMAT (strict JSON):
       return NextResponse.json({ error: 'Perplexity API error: ' + errorText }, { status: 500 })
     }
     
-    const data = await response.json()
+    let data = await response.json()
     console.log('[API] Perplexity API response received')
+    
+    // Post-call instrumentation-based retry
+    const MIN_QUERIES = 25
+    if (data?.usage?.num_search_queries < MIN_QUERIES && isDeep) {
+      console.log('[API] Retrying with enhanced search parameters due to low query count')
+      
+      const retryBody = {
+        ...requestBody,
+        web_search_options: { search_context_size: "high" },
+        reasoning_effort: "high"
+      }
+      // Remove domain filter to widen search scope
+      const { search_domain_filter, ...retryBodyWithoutFilter } = retryBody
+      
+      const retryResponse = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(retryBodyWithoutFilter)
+      })
+      
+      if (retryResponse.ok) {
+        const retryData = await retryResponse.json()
+        console.log('[API] Retry successful with enhanced parameters')
+        data = retryData
+      }
+    }
+    
+    // Log search metrics
+    console.log('[API] Search metrics:', {
+      numSearchQueries: data?.usage?.num_search_queries,
+      searchContextSize: requestBody.web_search_options?.search_context_size,
+      reasoningEffort: requestBody.reasoning_effort
+    })
     
     // Enhanced response parsing with Zod validation
     let parsedResponse: ResponseData
