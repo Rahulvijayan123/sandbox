@@ -28,9 +28,9 @@ export interface VerificationContext {
   }
 }
 
-// Verification prompt for GPT-4o
+// Expert-level verification prompt for pharmaceutical business development analysis
 function createVerificationPrompt(context: VerificationContext): string {
-  return `You are a factual verification expert for pharmaceutical business development analysis. Your task is to verify if the provided analysis is factually accurate and well-supported by the evidence.
+  return `You are a senior pharmaceutical business development executive with 25+ years of experience conducting rigorous verification of strategic analyses. You hold MD, PhD, and MBA degrees and have led major M&A transactions and strategic partnerships. Your verification must meet the highest standards of pharmaceutical industry expertise.
 
 ASSET DETAILS:
 - Therapeutic Area: ${context.assetData.therapeuticArea}
@@ -39,7 +39,7 @@ ASSET DETAILS:
 - Modality: ${context.assetData.modality}
 - Asset Stage: ${context.assetData.assetStage}
 
-LLM ANALYSIS:
+LLM ANALYSIS TO VERIFY:
 - Recommended Buyer: ${context.llmResponse.buyer}
 - Rationale: ${context.llmResponse.rationale}
 - Confidence Score: ${context.llmResponse.confidence_score}
@@ -51,25 +51,64 @@ ${context.evidence.companyProfiles.map(company =>
   `${company.name}: Focus areas: ${company.therapeutic_focus.join(', ')}, Pipeline gaps: ${company.pipeline_gaps.join(', ')}, Recent deals: ${company.recent_deals.join(', ')}, Cash: ${company.cash_position}, Deal tolerance: ${company.deal_size_tolerance}`
 ).join('\n')}
 
-VERIFICATION CRITERIA:
-1. Factual Accuracy: Are the claims about the recommended buyer's capabilities, focus areas, and recent activities accurate?
-2. Logical Consistency: Does the rationale logically follow from the evidence provided?
-3. Strategic Fit: Is the recommended buyer actually a good strategic fit based on the evidence?
-4. Evidence Support: Are the key claims in the rationale supported by the provided evidence?
-5. Completeness: Does the analysis consider relevant factors and alternatives?
+EXPERT VERIFICATION CRITERIA:
+
+1. **Factual Accuracy & Evidence Quality**
+   - Are all claims supported by specific, verifiable evidence?
+   - Are data sources credible and current (within 2-3 years)?
+   - Are figures, dates, and company names accurate?
+   - Is there sufficient detail to validate claims?
+
+2. **Strategic Depth & Sophistication**
+   - Does the analysis demonstrate senior executive-level strategic thinking?
+   - Are multiple dimensions considered (technical, commercial, operational, financial)?
+   - Is the competitive landscape analysis comprehensive?
+   - Are risk factors and mitigation strategies identified?
+
+3. **Technical Precision & Expertise**
+   - Are molecular targets, mechanisms of action, and clinical pathways accurately described?
+   - Is regulatory knowledge demonstrated (FDA/EMA processes, designations, milestones)?
+   - Are clinical trial data and pipeline information precise?
+   - Is manufacturing and supply chain knowledge evident?
+
+4. **Commercial Acumen & Market Understanding**
+   - Is market analysis sophisticated and data-driven?
+   - Are pricing, reimbursement, and commercial considerations addressed?
+   - Is competitive positioning analysis comprehensive?
+   - Are revenue projections and financial metrics realistic?
+
+5. **Operational Insight & Practicality**
+   - Are manufacturing, supply chain, and operational considerations addressed?
+   - Is integration planning and synergy analysis realistic?
+   - Are implementation challenges and timelines considered?
+   - Is the analysis actionable for business development teams?
+
+6. **Completeness & Comprehensiveness**
+   - Are all critical areas covered (strategic, technical, commercial, operational, financial)?
+   - Is the analysis thorough and exhaustive?
+   - Are gaps or missing information identified?
+   - Is the level of detail appropriate for senior executive decision-making?
+
+VERIFICATION SCORING:
+- **0.9-1.0**: Expert-level analysis with comprehensive evidence and strategic depth
+- **0.8-0.89**: High-quality analysis with minor gaps or areas for improvement
+- **0.7-0.79**: Good analysis with some missing elements or insufficient detail
+- **0.6-0.69**: Adequate analysis with significant gaps or inaccuracies
+- **Below 0.6**: Insufficient quality for senior executive decision-making
 
 VERIFICATION TASK:
-Analyze the LLM response against the evidence and criteria above. Determine if the analysis is factually sound and well-supported.
+Analyze the LLM response against the evidence and criteria above. Be extremely strict - only pass analyses that meet expert-level standards for pharmaceutical business development.
 
 RESPONSE FORMAT (strict JSON):
 {
   "passed": true/false,
   "confidence": 0.0-1.0,
-  "reasoning": "Detailed explanation of verification decision",
-  "issues": ["Issue 1", "Issue 2"] or []
+  "reasoning": "Detailed explanation of verification decision with specific issues identified",
+  "issues": ["Specific issue 1", "Specific issue 2"] or [],
+  "suggested_improvements": ["Improvement 1", "Improvement 2"] or []
 }
 
-If the analysis has factual errors, logical inconsistencies, or lacks evidence support, mark as "failed". Only pass if the analysis is factually accurate and well-supported.`
+If the analysis has ANY factual errors, logical inconsistencies, lacks evidence support, contains generic statements without specific data, or fails to meet expert-level standards, mark as "failed". Only pass if the analysis is factually accurate, evidence-based, strategically sound, and demonstrates senior executive-level expertise.`
 }
 
 // Call GPT-4o for verification
