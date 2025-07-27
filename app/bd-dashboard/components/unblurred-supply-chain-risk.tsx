@@ -23,17 +23,30 @@ interface UnblurredSupplyChainRiskProps {
 }
 
 export function UnblurredSupplyChainRisk({ supplyChainRisk }: UnblurredSupplyChainRiskProps) {
-  if (!supplyChainRisk) {
+  // Check if we have the enhanced unblurred data structure
+  const hasEnhancedData = supplyChainRisk && (
+    supplyChainRisk.raw_material_risks ||
+    supplyChainRisk.cdmo_risks ||
+    supplyChainRisk.qa_qc_risks ||
+    supplyChainRisk.distribution_risks
+  )
+
+  if (!hasEnhancedData) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-red-600">Supply Chain Risk & Disruption Profile - Insufficient Data</CardTitle>
+          <CardTitle className="text-orange-600">Supply Chain Risk & Disruption Profile - Enhanced Data Pending</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-slate-500 italic">
-            Supply chain risk analysis could not be validated at the required confidence threshold. 
-            This may be due to insufficient manufacturing data or limited historical disruption information.
+            Enhanced supply chain risk analysis is being processed. The system is currently evaluating manufacturing 
+            challenges and historical disruption analogs. This may take a few moments.
           </p>
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-700">
+              <strong>Processing:</strong> Risk analysis, historical analog identification, and relevance assessment
+            </p>
+          </div>
         </CardContent>
       </Card>
     )

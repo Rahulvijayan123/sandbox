@@ -23,6 +23,7 @@ const ResponseSchema = z.object({
   confidence_score: z.number().optional(),
   strategic_fit_score: z.number().optional(),
   alternative_buyers: z.array(z.string()).optional(),
+  // Legacy fields for backward compatibility
   revenue_performance: z.object({
     recent_revenue: z.string().optional(),
     growth_trends: z.string().optional(),
@@ -65,6 +66,120 @@ const ResponseSchema = z.object({
     geographic_breakdown: z.string().optional(),
     competitive_landscape: z.string().optional(),
     pricing_analysis: z.string().optional()
+  }).optional(),
+  // Enhanced unblurred sections
+  executive_overview: z.object({
+    deal_activity: z.object({
+      target_aligned_deals: z.array(z.object({
+        asset_name: z.string(),
+        transaction_amount: z.string(),
+        deal_date: z.string(),
+        relevance_score: z.number(),
+        source: z.string()
+      })).optional(),
+      modality_aligned_deals: z.array(z.object({
+        asset_name: z.string(),
+        transaction_amount: z.string(),
+        deal_date: z.string(),
+        relevance_score: z.number(),
+        source: z.string()
+      })).optional(),
+      indication_aligned_deals: z.array(z.object({
+        asset_name: z.string(),
+        transaction_amount: z.string(),
+        deal_date: z.string(),
+        relevance_score: z.number(),
+        source: z.string()
+      })).optional()
+    }).optional()
+  }).optional(),
+  development_readiness: z.object({
+    regulatory_status: z.object({
+      fast_track_designation: z.object({
+        likelihood: z.enum(['High', 'Medium', 'Low']),
+        rationale: z.string(),
+        confidence: z.number()
+      }).optional(),
+      orphan_drug_designation: z.object({
+        likelihood: z.enum(['High', 'Medium', 'Low']),
+        rationale: z.string(),
+        confidence: z.number()
+      }).optional(),
+      priority_review_voucher: z.object({
+        likelihood: z.enum(['High', 'Medium', 'Low']),
+        rationale: z.string(),
+        confidence: z.number()
+      }).optional(),
+      rmat_designation: z.object({
+        likelihood: z.enum(['High', 'Medium', 'Low']),
+        rationale: z.string(),
+        confidence: z.number()
+      }).optional(),
+      conditional_marketing_authorization: z.object({
+        likelihood: z.enum(['High', 'Medium', 'Low']),
+        rationale: z.string(),
+        confidence: z.number()
+      }).optional()
+    }).optional()
+  }).optional(),
+  operational_readiness: z.object({
+    supply_chain_risk: z.object({
+      raw_material_risks: z.array(z.object({
+        risk_level: z.enum(['High', 'Medium', 'Low']),
+        specific_challenge: z.string(),
+        relevance: z.string(),
+        historical_analogs: z.string(),
+        confidence: z.number()
+      })).optional(),
+      cdmo_risks: z.array(z.object({
+        risk_level: z.enum(['High', 'Medium', 'Low']),
+        specific_challenge: z.string(),
+        relevance: z.string(),
+        historical_analogs: z.string(),
+        confidence: z.number()
+      })).optional(),
+      qa_qc_risks: z.array(z.object({
+        risk_level: z.enum(['High', 'Medium', 'Low']),
+        specific_challenge: z.string(),
+        relevance: z.string(),
+        historical_analogs: z.string(),
+        confidence: z.number()
+      })).optional(),
+      distribution_risks: z.array(z.object({
+        risk_level: z.enum(['High', 'Medium', 'Low']),
+        specific_challenge: z.string(),
+        relevance: z.string(),
+        historical_analogs: z.string(),
+        confidence: z.number()
+      })).optional()
+    }).optional()
+  }).optional(),
+  strategic_synergy: z.object({
+    tam_analysis: z.object({
+      current_tam: z.object({
+        value: z.string(),
+        assumptions: z.object({
+          patient_population: z.string(),
+          penetration_rate: z.string(),
+          pricing: z.string(),
+          geographic_coverage: z.string()
+        })
+      }).optional(),
+      projected_tam: z.object({
+        value: z.string(),
+        assumptions: z.object({
+          patient_population_growth: z.string(),
+          penetration_rate_increase: z.string(),
+          pricing_evolution: z.string(),
+          market_expansion: z.string()
+        })
+      }).optional(),
+      validation: z.object({
+        math_verified: z.boolean(),
+        growth_rates_defensible: z.boolean(),
+        assumptions_specific: z.boolean()
+      }).optional()
+    }).optional()
   }).optional()
 })
 
