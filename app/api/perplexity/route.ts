@@ -48,13 +48,17 @@ const ResponseSchema = z.object({
     geopolitical_exposure: z.string().optional(),
     api_dependencies: z.string().optional(),
     cmo_risks: z.string().optional(),
-    historical_disruptions: z.string().optional()
+    historical_disruptions: z.string().optional(),
+    manufacturing_capacity: z.string().optional(),
+    raw_material_sourcing: z.string().optional()
   }).optional(),
   market_analysis: z.object({
     current_tam: z.string().optional(),
     projected_tam: z.string().optional(),
     cagr: z.string().optional(),
-    geographic_breakdown: z.string().optional()
+    geographic_breakdown: z.string().optional(),
+    competitive_landscape: z.string().optional(),
+    pricing_analysis: z.string().optional()
   }).optional()
 })
 
@@ -393,8 +397,8 @@ TASK: Analyze this asset and provide comprehensive insights including:
 4. Recent deal activity and M&A track record
 5. Pipeline alignment and synergy opportunities
 6. Regulatory status and milestones (FDA/EMA submissions, designations, clinical phase transitions)
-7. Supply chain risk and disruption profile (geopolitical exposure, API dependencies, CMO risks)
-8. Current and projected TAM (market sizing, CAGR, geographic breakdown)
+7. Supply chain risk and disruption profile (geopolitical exposure, API dependencies, CMO risks, manufacturing capacity, raw material sourcing)
+8. Current and projected TAM (market sizing, CAGR, geographic breakdown, competitive landscape, pricing analysis)
 
 RESPONSE FORMAT (strict JSON):
 {
@@ -431,16 +435,20 @@ RESPONSE FORMAT (strict JSON):
     "milestones": "Key regulatory milestones and upcoming events"
   },
   "supply_chain_risk": {
-    "geopolitical_exposure": "Geopolitical risks and regional dependencies",
-    "api_dependencies": "API sourcing dependencies and suppliers",
-    "cmo_risks": "Contract manufacturing organization risks",
-    "historical_disruptions": "Past supply chain disruptions and lessons learned"
+    "geopolitical_exposure": "Geopolitical risks and regional dependencies with specific countries and regions",
+    "api_dependencies": "API sourcing dependencies and suppliers with specific company names and locations",
+    "cmo_risks": "Contract manufacturing organization risks with specific CMO names and capacity constraints",
+    "historical_disruptions": "Past supply chain disruptions and lessons learned with specific dates and impacts",
+    "manufacturing_capacity": "Current manufacturing capacity and expansion plans with specific facility locations",
+    "raw_material_sourcing": "Raw material sourcing strategy and supplier diversification with specific suppliers and regions"
   },
   "market_analysis": {
-    "current_tam": "Current total addressable market size with sources",
-    "projected_tam": "Projected market size and growth forecasts",
-    "cagr": "Compound annual growth rate with timeframe",
-    "geographic_breakdown": "Market breakdown by geography and regions"
+    "current_tam": "Current total addressable market size with specific figures and sources",
+    "projected_tam": "Projected market size and growth forecasts with specific years and assumptions",
+    "cagr": "Compound annual growth rate with specific timeframe and methodology",
+    "geographic_breakdown": "Market breakdown by geography and regions with specific percentages",
+    "competitive_landscape": "Competitive landscape analysis with specific competitor names and market shares",
+    "pricing_analysis": "Pricing analysis and reimbursement considerations with specific price ranges and payer dynamics"
   }
 }`
 
@@ -450,9 +458,9 @@ RESPONSE FORMAT (strict JSON):
       return NextResponse.json({ error: 'Missing Perplexity API key.' }, { status: 500 })
     }
 
-    // Optimized model selection and parameters for faster response
-    const model = 'sonar-pro' // Using sonar-pro for faster response
-    const isDeep = false // Disable deep research to avoid timeout
+    // Enhanced model selection and parameters for comprehensive data
+    const model = 'sonar-deep-research' // Using deep research for comprehensive analysis
+    const isDeep = true // Enable deep research for detailed data
     
     const domainAllowlist = [
       "evaluatepharma.com",
@@ -464,31 +472,41 @@ RESPONSE FORMAT (strict JSON):
       "statista.com",
       "iqvia.com",
       "biocentury.com",
-      "pharmatimes.com"
+      "pharmatimes.com",
+      "reuters.com",
+      "bloomberg.com",
+      "statnews.com",
+      "endpts.com",
+      "biopharmadive.com",
+      "pharmaceutical-journal.com",
+      "contractpharma.com",
+      "outsourcing-pharma.com",
+      "manufacturingchemist.com",
+      "pharmamanufacturing.com"
     ]
 
-    // Set up web search parameters
+    // Set up web search parameters for comprehensive research
     const webSearchOptions = {
-      search_context_size: "medium" // Reduced context size for speed
+      search_context_size: "high" // High context size for detailed analysis
     }
 
     const requestBody = {
       model,
       messages: [
-        { role: 'system', content: 'You are a business development expert in pharma M&A. Provide precise, evidence-based analysis.' },
+        { role: 'system', content: 'You are a business development expert in pharma M&A with deep knowledge of supply chains, manufacturing, and market analysis. Provide precise, evidence-based analysis with specific data points and sources.' },
         { role: 'user', content: enhancedPrompt },
       ],
-      max_tokens: 2000, // Reduced token limit for faster response
+      max_tokens: 4000, // Increased token limit for comprehensive response
       temperature: 0.1,
-      reasoning_effort: "medium", // Reduced reasoning effort
+      reasoning_effort: "high", // High reasoning effort for complex analysis
       web_search_options: webSearchOptions,
       search_recency_filter: "year",
       search_domain_filter: domainAllowlist
     }
 
-    // Enhanced LLM call with timeout protection
+    // Enhanced LLM call with extended timeout for comprehensive research
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 45000) // 45 second timeout for deep research
     
     let response
     try {

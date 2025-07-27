@@ -710,10 +710,10 @@ export default function Dashboard() {
 
                     {/* Detailed Text Report */}
                     <div className="prose max-w-none space-y-6">
-                      {/* Current & Projected TAM (with assumptions) (Blurred Content) */}
+                      {/* Current & Projected TAM (with assumptions) */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Supply Chain Risk and Disruption Profile</CardTitle>
+                          <CardTitle>Current & Projected TAM (with assumptions)</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="blur-sm select-none text-slate-400" aria-hidden="true">
