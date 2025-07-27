@@ -167,13 +167,25 @@ Validation: Mathematical verification, growth rate defensibility, assumption spe
 
 CRITICAL VALIDATION REQUIREMENTS:
 
-1. **No Fallback Logic**: If data cannot be validated at confidence threshold, return "Insufficient Data"
-2. **Source Verification**: All claims must be backed by specific, verifiable sources
-3. **Logical Consistency**: Cross-check all outputs for internal consistency
-4. **Mathematical Accuracy**: Verify all calculations and growth projections
-5. **Regulatory Compliance**: Ensure all regulatory assessments align with current guidance
-6. **Temporal Relevance**: All data must be current (within 2-3 years)
-7. **Strategic Rationale Quality**: Every strategic rationale must be comprehensive, data-driven, and include specific quantitative analysis. Consistency is critical - each analysis must meet the same high standard regardless of input complexity.
+1. **NO PLACEHOLDERS OR FAKE DATA**: All data must be real, verifiable, and sourced from actual pharmaceutical industry sources. No dummy numbers, placeholder values, or fictional data allowed.
+
+2. **Real Deal Activity**: Only include actual historical transactions from SEC filings, press releases, PitchBook, or company investor presentations. Each deal must have real asset names, actual transaction amounts, and verifiable dates.
+
+3. **Real Regulatory Assessments**: All FDA/EMA designations must be based on actual regulatory criteria, real disease prevalence data, and current guidance documents. No hypothetical scenarios.
+
+4. **Real Supply Chain Analysis**: Risk assessments must be based on actual manufacturing challenges, real CDMO incidents, FDA 483 observations, and historical disruption data.
+
+5. **Real TAM Calculations**: Market analysis must use actual patient population data, real pricing from similar drugs, and verifiable growth rates from industry reports.
+
+6. **Source Verification**: Every claim must be backed by specific, verifiable sources that can be found online.
+
+7. **No Fallback Logic**: If real data cannot be validated at confidence threshold, return "Insufficient Data" - never use placeholder content.
+
+8. **Mathematical Accuracy**: All calculations must be mathematically correct and based on real industry benchmarks.
+
+9. **Temporal Relevance**: All data must be current (within 2-3 years) and reflect actual market conditions.
+
+10. **Strategic Rationale Quality**: Every strategic rationale must be comprehensive, data-driven, and include specific quantitative analysis with real metrics and verifiable sources.
 
 RESPONSE FORMAT (strict JSON):
 {
@@ -186,11 +198,11 @@ RESPONSE FORMAT (strict JSON):
     "deal_activity": {
       "target_aligned_deals": [
         {
-          "asset_name": "Drug Name",
-          "transaction_amount": "$X.X billion",
-          "deal_date": "YYYY-MM-DD",
+          "asset_name": "Real Drug Name (e.g., Tagrisso, Keytruda)",
+          "transaction_amount": "Real transaction amount (e.g., $2.1B upfront + $1.8B milestones)",
+          "deal_date": "Real date (YYYY-MM-DD)",
           "relevance_score": 0.9,
-          "source": "SEC Filing/Company Press Release"
+          "source": "Real source (e.g., SEC Filing 8-K, Company Press Release, PitchBook)"
         }
       ],
       "modality_aligned_deals": [...],
@@ -201,7 +213,7 @@ RESPONSE FORMAT (strict JSON):
     "regulatory_status": {
       "fast_track_designation": {
         "likelihood": "High/Medium/Low",
-        "rationale": "Specific legal criteria and asset characteristics",
+        "rationale": "Real legal criteria (e.g., 21 U.S.C. § 356), actual disease prevalence data, and specific asset characteristics",
         "confidence": 0.9
       },
       "orphan_drug_designation": {...},
@@ -215,9 +227,9 @@ RESPONSE FORMAT (strict JSON):
       "raw_material_risks": [
         {
           "risk_level": "High/Medium/Low",
-          "specific_challenge": "Detailed description",
-          "relevance": "Why this applies to this asset",
-          "historical_analogs": "Specific examples",
+          "specific_challenge": "Real manufacturing challenge (e.g., API synthesis complexity, chiral intermediate scarcity)",
+          "relevance": "Why this applies to this specific asset and modality",
+          "historical_analogs": "Real historical examples (e.g., Tagrisso supply disruption 2022, specific CDMO incidents)",
           "confidence": 0.8
         }
       ],
@@ -229,12 +241,12 @@ RESPONSE FORMAT (strict JSON):
   "strategic_synergy": {
     "tam_analysis": {
       "current_tam": {
-        "value": "$X.X billion",
+        "value": "Real market value (e.g., $8.7B)",
         "assumptions": {
-          "patient_population": "X patients",
-          "penetration_rate": "X%",
-          "pricing": "$X per patient per year",
-          "geographic_coverage": "X%"
+          "patient_population": "Real patient numbers (e.g., 85,000 new cases annually)",
+          "penetration_rate": "Real market penetration (e.g., 35% based on current adoption)",
+          "pricing": "Real pricing data (e.g., $12,500 per month based on similar drugs)",
+          "geographic_coverage": "Real geographic coverage (e.g., US, EU5, Japan, Canada, Australia)"
         }
       },
       "projected_tam": {
