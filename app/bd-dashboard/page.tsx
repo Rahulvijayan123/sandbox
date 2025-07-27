@@ -11,6 +11,10 @@ import { ScientificAlignmentChart } from "./components/scientific-alignment-char
 import { OperationalReadinessChart } from "./components/operational-readiness-chart"
 import { FinancialProjectionsChart } from "./components/financial-projections-chart"
 import { ROIAnalysisChart } from "./components/roi-analysis-chart"
+import { UnblurredDealActivity } from "./components/unblurred-deal-activity"
+import { UnblurredRegulatoryStatus } from "./components/unblurred-regulatory-status"
+import { UnblurredSupplyChainRisk } from "./components/unblurred-supply-chain-risk"
+import { UnblurredTAMAnalysis } from "./components/unblurred-tam-analysis"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 export default function Dashboard() {
@@ -25,6 +29,11 @@ export default function Dashboard() {
   const [regulatoryStatus, setRegulatoryStatus] = useState<any>(null)
   const [supplyChainRisk, setSupplyChainRisk] = useState<any>(null)
   const [marketAnalysis, setMarketAnalysis] = useState<any>(null)
+  // Enhanced unblurred sections state
+  const [executiveOverview, setExecutiveOverview] = useState<any>(null)
+  const [developmentReadiness, setDevelopmentReadiness] = useState<any>(null)
+  const [operationalReadiness, setOperationalReadiness] = useState<any>(null)
+  const [strategicSynergy, setStrategicSynergy] = useState<any>(null)
   const [showFullBlur, setShowFullBlur] = useState(false)
 
   useEffect(() => {
@@ -44,6 +53,11 @@ export default function Dashboard() {
         setRegulatoryStatus(parsed.regulatory_status)
         setSupplyChainRisk(parsed.supply_chain_risk)
         setMarketAnalysis(parsed.market_analysis)
+        // Enhanced unblurred sections
+        setExecutiveOverview(parsed.executive_overview)
+        setDevelopmentReadiness(parsed.development_readiness)
+        setOperationalReadiness(parsed.operational_readiness)
+        setStrategicSynergy(parsed.strategic_synergy)
       } catch {}
     }
   }, [])
@@ -189,49 +203,8 @@ export default function Dashboard() {
                           )}
                         </CardContent>
                       </Card>
-                      {/* Deal Activity Card */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Deal Activity</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {dealActivity ? (
-                            <div className="space-y-4">
-                              {dealActivity.recent_deals && (
-                                <div>
-                                  <h4 className="font-semibold text-slate-800 mb-2">Recent Deals</h4>
-                                  <p className="text-slate-700 leading-relaxed text-sm">{dealActivity.recent_deals}</p>
-                                </div>
-                              )}
-                              {dealActivity.partnerships && (
-                                <div>
-                                  <h4 className="font-semibold text-slate-800 mb-2">Partnerships</h4>
-                                  <p className="text-slate-700 leading-relaxed text-sm">{dealActivity.partnerships}</p>
-                                </div>
-                              )}
-                              {dealActivity.investment_focus && (
-                                <div>
-                                  <h4 className="font-semibold text-slate-800 mb-2">Investment Focus</h4>
-                                  <p className="text-slate-700 leading-relaxed text-sm">{dealActivity.investment_focus}</p>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
-                              <ul className="list-disc pl-6 text-xs mb-2">
-                                <li>Acquisition A: $1.2B</li>
-                                <li>Partnership B: $500M</li>
-                                <li>Acquisition C: $800M</li>
-                                <li>Collaboration D: $300M</li>
-                                <li>Licensing E: $150M</li>
-                                <li>Synergy realization: $200M</li>
-                                <li>New market entries: 3</li>
-                                <li>Pipeline expansion: 5 assets</li>
-                              </ul>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                      {/* Unblurred Deal Activity */}
+                      <UnblurredDealActivity dealActivity={executiveOverview?.deal_activity} />
                     </div>
                     {/* Executive Summary Card (Blurred Content) */}
                     <Card>
@@ -429,60 +402,8 @@ export default function Dashboard() {
                 </AccordionTrigger>
                 <AccordionContent className="pt-4">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Regulatory Status & Milestones */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Regulatory Status & Milestones</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {regulatoryStatus ? (
-                          <div className="space-y-4">
-                            {regulatoryStatus.clinical_phase && (
-                              <div>
-                                <h4 className="font-semibold text-slate-800 mb-2">Clinical Phase</h4>
-                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.clinical_phase}</p>
-                              </div>
-                            )}
-                            {regulatoryStatus.fda_submissions && (
-                              <div>
-                                <h4 className="font-semibold text-slate-800 mb-2">FDA Submissions</h4>
-                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.fda_submissions}</p>
-                              </div>
-                            )}
-                            {regulatoryStatus.ema_submissions && (
-                              <div>
-                                <h4 className="font-semibold text-slate-800 mb-2">EMA Submissions</h4>
-                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.ema_submissions}</p>
-                              </div>
-                            )}
-                            {regulatoryStatus.designations && (
-                              <div>
-                                <h4 className="font-semibold text-slate-800 mb-2">Designations</h4>
-                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.designations}</p>
-                              </div>
-                            )}
-                            {regulatoryStatus.milestones && (
-                              <div>
-                                <h4 className="font-semibold text-slate-800 mb-2">Key Milestones</h4>
-                                <p className="text-slate-700 leading-relaxed">{regulatoryStatus.milestones}</p>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
-                            <div className="space-y-2">
-                              <p className="font-normal text-base leading-relaxed">The program has achieved several key regulatory milestones, including successful IND submission, orphan drug designation, and fast track status in multiple jurisdictions. Ongoing interactions with regulatory agencies have resulted in clear guidance for pivotal trial design and expedited review pathways.</p>
-                              <ul className="list-disc pl-6 text-sm">
-                                <li>IND submitted: Jan 2023</li>
-                                <li>Orphan Drug Designation: Feb 2023</li>
-                                <li>Fast Track Status: Mar 2023</li>
-                                <li>Pre-NDA Meeting: Scheduled Q4 2024</li>
-                              </ul>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                    {/* Unblurred Regulatory Status */}
+                    <UnblurredRegulatoryStatus regulatoryStatus={developmentReadiness?.regulatory_status} />
                     {/* Clinical Trial Progress & Data Availability (paragraph + fake line chart) */}
                     <Card>
                       <CardHeader>
@@ -641,7 +562,7 @@ export default function Dashboard() {
                       {/* Supply Chain Risk and Disruption Profile (Blurred Content) */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Supply Chain Risk and Disruption Profile</CardTitle>
+                          <CardTitle>Supply Chain Risk and Disruption Profile - Unblurred</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="blur-sm select-none text-slate-400" aria-hidden="true">
@@ -713,7 +634,7 @@ export default function Dashboard() {
                       {/* Current & Projected TAM (with assumptions) */}
                       <Card>
                         <CardHeader>
-                          <CardTitle>Current & Projected TAM (with assumptions)</CardTitle>
+                          <CardTitle>Current & Projected TAM - Unblurred</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="blur-sm select-none text-slate-400" aria-hidden="true">

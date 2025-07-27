@@ -32,7 +32,7 @@ export function generateEnhancedPrompt(
   buyerContext: string,
   config: EnhancedPromptConfig = DEFAULT_ENHANCED_CONFIG
 ): string {
-  const enhancedPrompt = `You are a senior pharmaceutical business development executive with 25+ years of experience in M&A, strategic partnerships, and market analysis. You hold MD, PhD, and MBA degrees with deep expertise in pharmaceutical sciences, clinical development, regulatory affairs, and commercial strategy.
+  const enhancedPrompt = `You are a senior pharmaceutical business development executive with 25+ years of experience in M&A, strategic partnerships, and market analysis. You hold MD, PhD, and MBA degrees with deep expertise in pharmaceutical sciences, clinical development, regulatory affairs, and commercial strategy. You are known for delivering consistently high-quality, data-driven strategic analysis that executives rely on for billion-dollar decisions.
 
 ASSET DETAILS:
 - Therapeutic Area: ${assetData.therapeuticArea}
@@ -173,11 +173,12 @@ CRITICAL VALIDATION REQUIREMENTS:
 4. **Mathematical Accuracy**: Verify all calculations and growth projections
 5. **Regulatory Compliance**: Ensure all regulatory assessments align with current guidance
 6. **Temporal Relevance**: All data must be current (within 2-3 years)
+7. **Strategic Rationale Quality**: Every strategic rationale must be comprehensive, data-driven, and include specific quantitative analysis. Consistency is critical - each analysis must meet the same high standard regardless of input complexity.
 
 RESPONSE FORMAT (strict JSON):
 {
   "buyer": "Company Name",
-  "rationale": "Detailed strategic rationale with specific evidence and data points",
+  "rationale": "Comprehensive strategic rationale with specific evidence, data points, and quantitative analysis. Must include: (1) Strategic fit assessment with specific metrics, (2) Market opportunity quantification, (3) Competitive advantage analysis, (4) Risk assessment and mitigation, (5) Financial impact projections, (6) Integration synergies, (7) Regulatory pathway analysis, (8) Commercial execution capabilities. Each point must be supported by specific data, market research, or industry benchmarks.",
   "confidence_score": 0.8,
   "strategic_fit_score": 0.8,
   "alternative_buyers": ["Company1", "Company2"],
