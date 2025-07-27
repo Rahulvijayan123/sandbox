@@ -409,51 +409,61 @@ RESPONSE FORMAT (strict JSON):
       return NextResponse.json({ error: 'Missing Perplexity API key.' }, { status: 500 })
     }
 
-    // Enhanced model selection and parameters
-    const model = 'sonar-deep-research'
-    const isDeep = model === 'sonar-deep-research'
+    // Optimized model selection and parameters for faster response
+    const model = 'sonar-pro' // Using sonar-pro for faster response
+    const isDeep = false // Disable deep research to avoid timeout
     
     const domainAllowlist = [
       "evaluatepharma.com",
       "clinicaltrials.gov",
       "fiercepharma.com",
-      "biospace.com",
-      "pharmatimes.com",
-      "pharmaceutical-journal.com",
-      "reuters.com",
-      "bloomberg.com",
-      "statnews.com",
-      "endpts.com"
+      "biospace.com"
     ]
 
     // Set up web search parameters
     const webSearchOptions = {
-      search_context_size: isDeep ? "high" : "medium"
+      search_context_size: "medium" // Reduced context size for speed
     }
 
     const requestBody = {
       model,
       messages: [
-        { role: 'system', content: 'You are a business development expert in pharma M&A. Provide precise, evidence-based analysis with comprehensive research.' },
+        { role: 'system', content: 'You are a business development expert in pharma M&A. Provide precise, evidence-based analysis.' },
         { role: 'user', content: enhancedPrompt },
       ],
-      max_tokens: 4000,
+      max_tokens: 2000, // Reduced token limit for faster response
       temperature: 0.1,
-      reasoning_effort: isDeep ? "high" : "medium",
+      reasoning_effort: "medium", // Reduced reasoning effort
       web_search_options: webSearchOptions,
       search_recency_filter: "year",
       search_domain_filter: domainAllowlist
     }
 
-    // Enhanced LLM call with deep research parameters
-    let response = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
-    })
+    // Enhanced LLM call with timeout protection
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 second timeout
+    
+    let response
+    try {
+      response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
+      })
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('[API] Request timeout')
+        return NextResponse.json({ error: 'Request timeout - please try again' }, { status: 408 })
+      }
+      throw error
+    }
+    
+    clearTimeout(timeoutId)
     
     console.log('[API] Perplexity API response status:', response.status)
     if (!response.ok) {
@@ -462,36 +472,19 @@ RESPONSE FORMAT (strict JSON):
       return NextResponse.json({ error: 'Perplexity API error: ' + errorText }, { status: 500 })
     }
     
+    // Handle timeout errors
+    if (response.status === 0) {
+      console.error('[API] Request timeout')
+      return NextResponse.json({ error: 'Request timeout - please try again' }, { status: 408 })
+    }
+    
     let data = await response.json()
     console.log('[API] Perplexity API response received')
     
-    // Post-call instrumentation-based retry
-    const MIN_QUERIES = 25
+    // Simplified retry logic for faster response
+    const MIN_QUERIES = 10 // Reduced threshold
     if (data?.usage?.num_search_queries < MIN_QUERIES && isDeep) {
-      console.log('[API] Retrying with enhanced search parameters due to low query count')
-      
-      const retryBody = {
-        ...requestBody,
-        web_search_options: { search_context_size: "high" },
-        reasoning_effort: "high"
-      }
-      // Remove domain filter to widen search scope
-      const { search_domain_filter, ...retryBodyWithoutFilter } = retryBody
-      
-      const retryResponse = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(retryBodyWithoutFilter)
-      })
-      
-      if (retryResponse.ok) {
-        const retryData = await retryResponse.json()
-        console.log('[API] Retry successful with enhanced parameters')
-        data = retryData
-      }
+      console.log('[API] Skipping retry to avoid timeout - proceeding with current response')
     }
     
     // Log search metrics
