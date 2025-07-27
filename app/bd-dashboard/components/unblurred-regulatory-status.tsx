@@ -35,7 +35,7 @@ export function UnblurredRegulatoryStatus({ regulatoryStatus }: UnblurredRegulat
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-orange-600">Regulatory Status & Milestones - Enhanced Data Pending</CardTitle>
+          <CardTitle>Regulatory Status & Milestones</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-slate-500 italic">

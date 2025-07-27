@@ -35,7 +35,7 @@ export function UnblurredSupplyChainRisk({ supplyChainRisk }: UnblurredSupplyCha
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-orange-600">Supply Chain Risk & Disruption Profile - Enhanced Data Pending</CardTitle>
+          <CardTitle>Supply Chain Risk & Disruption Profile</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-slate-500 italic">

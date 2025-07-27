@@ -51,7 +51,7 @@ export function UnblurredTAMAnalysis({ tamAnalysis }: UnblurredTAMAnalysisProps)
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-orange-600">Current & Projected TAM - Enhanced Data Pending</CardTitle>
+          <CardTitle>Current & Projected TAM</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-slate-500 italic">

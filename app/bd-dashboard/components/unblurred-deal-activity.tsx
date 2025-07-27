@@ -33,7 +33,7 @@ export function UnblurredDealActivity({ dealActivity }: UnblurredDealActivityPro
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-orange-600">Deal Activity - Enhanced Data Pending</CardTitle>
+          <CardTitle>Deal Activity</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-slate-500 italic">

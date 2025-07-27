@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, TrendingUp, Award, CheckCircle, Target, Zap, BarChart3 } from "lucide-react"
+import { Building2, TrendingUp, Award, CheckCircle, Target, Zap, BarChart3, FlaskConical, Microscope, TestTube } from "lucide-react"
 import { RevenueChart } from "./components/revenue-chart"
 import { DealFlowChart } from "./components/deal-flow-chart"
 import { ScientificAlignmentChart } from "./components/scientific-alignment-chart"
@@ -187,6 +187,124 @@ export default function Dashboard() {
                       {/* Unblurred Deal Activity */}
                       <UnblurredDealActivity dealActivity={executiveOverview?.deal_activity} />
                     </div>
+
+                    {/* New Blurred Sections for Executive Overview */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Therapeutic Area Investment Trends */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Therapeutic Area Investment Trends</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="mt-4 h-20 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Indication-Specific Competitive Positioning */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Indication-Specific Competitive Positioning</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-2">
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="mt-3 h-16 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Historical M&A Benchmarking for Similar Assets */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Historical M&A Benchmarking for Similar Assets</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="mt-4 h-24 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Scientific Capabilities - Standalone Section */}
+              <AccordionItem value="scientific" className="px-4">
+                <AccordionTrigger style={{ backgroundColor: '#fff', color: '#000' }} className="text-lg font-semibold hover:no-underline focus:no-underline bg-transparent shadow-none">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="h-5 w-5" />
+                    Scientific Capabilities
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pt-4">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Scientific Alignment Chart */}
+                      <ScientificAlignmentChart />
+                      
+                      {/* Scientific Capabilities Details */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Research & Development Excellence</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {scientificCapabilities ? (
+                            <div className="space-y-4">
+                              {scientificCapabilities.research_expertise && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Research Expertise</h4>
+                                  <p className="text-slate-700 leading-relaxed">{scientificCapabilities.research_expertise}</p>
+                                </div>
+                              )}
+                              {scientificCapabilities.technology_platforms && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Technology Platforms</h4>
+                                  <p className="text-slate-700 leading-relaxed">{scientificCapabilities.technology_platforms}</p>
+                                </div>
+                              )}
+                              {scientificCapabilities.innovation_pipeline && (
+                                <div>
+                                  <h4 className="font-semibold text-slate-800 mb-2">Innovation Pipeline</h4>
+                                  <p className="text-slate-700 leading-relaxed">{scientificCapabilities.innovation_pipeline}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <p className="mb-2">The company demonstrates exceptional research capabilities across multiple therapeutic areas, with a proven track record of breakthrough discoveries and innovative drug development. Their scientific expertise spans from target identification through clinical development, with particular strength in precision medicine and novel therapeutic modalities.</p>
+                              <p className="mb-2">Advanced technology platforms enable rapid drug discovery and optimization, while a robust innovation pipeline ensures sustained scientific leadership. The organization's commitment to cutting-edge research is evidenced by numerous peer-reviewed publications, patents, and successful drug approvals.</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -197,29 +315,94 @@ export default function Dashboard() {
                   Development Readiness
                 </AccordionTrigger>
                 <AccordionContent className="pt-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Unblurred Regulatory Status */}
-                    <UnblurredRegulatoryStatus regulatoryStatus={developmentReadiness?.regulatory_status} />
-                    {/* Clinical Trial Progress & Data Availability */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Clinical Trial Progress & Data Availability</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="relative">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Unblurred Regulatory Status */}
+                      <UnblurredRegulatoryStatus regulatoryStatus={developmentReadiness?.regulatory_status} />
+                      
+                      {/* Clinical Trial Progress & Data Availability */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Clinical Trial Progress & Data Availability</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="relative">
+                            <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                              <div className="space-y-2">
+                                <p className="text-base leading-relaxed">Multiple trials are ongoing across Phases I-III. Interim data readouts have demonstrated strong efficacy signals and a favorable safety profile. Data packages are available for regulatory review.</p>
+                                <svg width="100%" height="60" viewBox="0 0 200 60" className="mt-2">
+                                  <polyline points="0,50 20,40 40,30 60,20 80,25 100,15 120,10 140,20 160,30 180,25 200,15" fill="none" stroke="#888" strokeWidth="2" />
+                                  <rect x="0" y="50" width="200" height="10" fill="#f3f4f6" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* New Blurred Sections for Development Readiness */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* CMC Maturity and Process Scalability */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>CMC Maturity and Process Scalability</CardTitle>
+                        </CardHeader>
+                        <CardContent>
                           <div className="blur-sm select-none text-slate-400" aria-hidden="true">
                             <div className="space-y-2">
-                              <p className="text-base leading-relaxed">Multiple trials are ongoing across Phases I-III. Interim data readouts have demonstrated strong efficacy signals and a favorable safety profile. Data packages are available for regulatory review.</p>
-                              <svg width="100%" height="60" viewBox="0 0 200 60" className="mt-2">
-                                <polyline points="0,50 20,40 40,30 60,20 80,25 100,15 120,10 140,20 160,30 180,25 200,15" fill="none" stroke="#888" strokeWidth="2" />
-                                <rect x="0" y="50" width="200" height="10" fill="#f3f4f6" />
-                              </svg>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="mt-3 h-20 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
                             </div>
                           </div>
-                          <div className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+
+                      {/* Nonclinical and Toxicology Summary */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Nonclinical and Toxicology Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="mt-4 h-16 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Clinical Protocol Risk Assessment */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Clinical Protocol Risk Assessment</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-2">
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="mt-3 h-24 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -234,13 +417,13 @@ export default function Dashboard() {
                     {/* Financial Charts */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <OperationalReadinessChart />
-                      <ScientificAlignmentChart />
                     </div>
 
                     {/* Detailed Text Report */}
                     <div className="prose max-w-none space-y-6">
                       {/* Unblurred Supply Chain Risk */}
                       <UnblurredSupplyChainRisk supplyChainRisk={operationalReadiness?.supply_chain_risk} />
+                      
                       {/* ESG / Sustainability Objectives */}
                       <Card>
                         <CardHeader>
@@ -257,6 +440,69 @@ export default function Dashboard() {
                               <li>Zero waste to landfill at 45 facilities</li>
                             </ul>
                             <p className="mb-2">Ongoing programs drive continuous improvement and stakeholder engagement. Water stewardship and community investment are key priorities for the next phase of sustainability initiatives.</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* New Blurred Sections for Operational Readiness */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Third-Party Dependency Risk Map */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Third-Party Dependency Risk Map</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="mt-4 h-20 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Manufacturing Geography and Political Exposure */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Manufacturing Geography and Political Exposure</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-2">
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="mt-3 h-16 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* CDMO Partner Fit Scorecard */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>CDMO Partner Fit Scorecard</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="mt-4 h-24 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -282,6 +528,7 @@ export default function Dashboard() {
                     <div className="prose max-w-none space-y-6">
                       {/* Unblurred TAM Analysis */}
                       <UnblurredTAMAnalysis tamAnalysis={strategicSynergy?.tam_analysis} />
+                      
                       {/* Portfolio Synergy */}
                       <Card>
                         <CardHeader>
@@ -298,6 +545,68 @@ export default function Dashboard() {
                               <li>23 breakthrough designations</li>
                               <li>Integrated sales force</li>
                             </ul>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* New Blurred Sections for Strategic Synergy */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Pipeline Overlap and Redundancy Check */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Pipeline Overlap and Redundancy Check</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-2">
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="mt-3 h-20 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Portfolio Fit Heatmap */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Portfolio Fit Heatmap</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="mt-4 h-16 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Synergy-Adjusted IRR Simulation */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Synergy-Adjusted IRR Simulation</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="blur-sm select-none text-slate-400" aria-hidden="true">
+                            <div className="space-y-3">
+                              <div className="h-4 bg-slate-300 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-300 rounded w-full"></div>
+                              <div className="h-3 bg-slate-300 rounded w-5/6"></div>
+                              <div className="mt-4 h-24 bg-slate-200 rounded"></div>
+                              <div className="h-3 bg-slate-300 rounded w-4/5"></div>
+                              <div className="h-3 bg-slate-300 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-300 rounded w-2/3"></div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
