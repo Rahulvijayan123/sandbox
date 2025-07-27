@@ -4,6 +4,8 @@ import { recordAPIMetric } from '@/lib/performance-monitor'
 import { enrichAssetData, calculateDataQualityScore } from '@/lib/enhanced-data-validation'
 import { runEnsembleAnalysis, validateModelResponse } from '@/lib/ensemble-model-system'
 import { assessResearchDepth, generateDepthSpecificPrompt, assessResearchQuality } from '@/lib/research-depth-enhancer'
+import { generateEnhancedPrompt, validateEnhancedResponse, DEFAULT_ENHANCED_CONFIG } from '@/lib/enhanced-prompt-engine'
+import { processEnhancedResponse } from '@/lib/enhanced-openai-validator'
 
 // Schema for input validation
 const InputSchema = z.object({
@@ -725,8 +727,8 @@ export async function POST(req: NextRequest) {
       `${index + 1}. ${buyer.name} (Strategic Fit Score: ${buyer.score.toFixed(2)})`
     ).join('\n')
     
-        // Generate depth-specific prompt
-    const enhancedPrompt = generateDepthSpecificPrompt(enrichedData, researchDepth, buyerContext)
+        // Generate enhanced prompt with unblurred sections
+    const enhancedPrompt = generateEnhancedPrompt(enrichedData, researchDepth, buyerContext, DEFAULT_ENHANCED_CONFIG)
 
     const apiKey = process.env.PERPLEXITY_API_KEY
     if (!apiKey) {
@@ -740,22 +742,32 @@ export async function POST(req: NextRequest) {
     
     console.log(`[API] Using model: ${model}, isDeep: ${isDeep}, timeout: ${timeout}ms`)
 
-    // Optimized web search parameters
+    // Enhanced web search parameters with increased sourcing breadth and validation depth
     const webSearchOptions = {
-      search_context_size: isDeep ? "high" : "medium"
+      search_context_size: "high", // Always use high context size for comprehensive sourcing
+      search_recency_filter: "year",
+      search_domain_filter: domainAllowlist,
+      // Enhanced sourcing parameters
+      search_breadth: "comprehensive", // Maximum sourcing breadth
+      validation_depth: "expert", // Expert-level validation depth
+      max_sources: 15, // Maximum number of sources
+      source_quality_threshold: 0.8 // High confidence threshold for sources
     }
 
     const requestBody = {
       model,
       messages: [
-        { role: 'system', content: 'You are a senior pharmaceutical business development executive with 20+ years of experience in M&A, strategic partnerships, and market analysis. You hold MD, PhD, and MBA degrees with deep expertise in pharmaceutical sciences, clinical development, regulatory affairs, and commercial strategy. Your analysis must reflect the depth, precision, and sophistication expected from a seasoned industry leader. Be exhaustive in research, surgically precise in analysis, and provide insights that demonstrate expert-level understanding of pharmaceutical business dynamics.' },
+        { role: 'system', content: 'You are a senior pharmaceutical business development executive with 25+ years of experience in M&A, strategic partnerships, and market analysis. You hold MD, PhD, and MBA degrees with deep expertise in pharmaceutical sciences, clinical development, regulatory affairs, and commercial strategy. Your analysis must reflect the depth, precision, and sophistication expected from a seasoned industry leader. Be exhaustive in research, surgically precise in analysis, and provide insights that demonstrate expert-level understanding of pharmaceutical business dynamics.' },
         { role: 'user', content: enhancedPrompt },
       ],
-      max_tokens: isDeep ? 8000 : 6000, // Maximum token limit for comprehensive expert analysis
-      temperature: 0.05, // Very low temperature for maximum consistency and precision
-      top_p: 0.95, // High top_p for creativity while maintaining focus
-      reasoning_effort: isDeep ? "high" : "high", // Always use high reasoning effort
+      max_tokens: 12000, // Increased token limit for comprehensive analysis with unblurred sections
+      temperature: 0.02, // Ultra-low temperature for maximum consistency and precision
+      top_p: 0.98, // Very high top_p for creativity while maintaining focus
+      reasoning_effort: "high", // Always use high reasoning effort
       web_search_options: webSearchOptions,
+      // Enhanced sourcing and validation parameters
+      sourcing_breadth: "comprehensive", // Maximum sourcing breadth
+      validation_depth: "expert", // Expert-level validation depth
       search_recency_filter: "year",
       search_domain_filter: domainAllowlist
     }
@@ -818,6 +830,17 @@ export async function POST(req: NextRequest) {
       // Validate with Zod schema
       parsedResponse = ResponseSchema.parse(parsed)
       console.log('[API] Validated response:', parsedResponse)
+      
+      // Enhanced response processing with domain expert validation
+      const enhancedProcessing = await processEnhancedResponse(parsedResponse, enrichedData, DEFAULT_ENHANCED_CONFIG)
+      console.log('[API] Enhanced processing completed:', {
+        confidence: enhancedProcessing.confidence,
+        issues: enhancedProcessing.issues.length,
+        validationResults: enhancedProcessing.validationResults
+      })
+      
+      // Use processed response
+      parsedResponse = enhancedProcessing.processedResponse
       
     } catch (e) {
       console.error('[API] Could not parse or validate Perplexity response:', e)
