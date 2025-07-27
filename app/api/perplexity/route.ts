@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getTopBuyers, calculateBuyerScores, ENHANCED_PHARMA_DATABASE } from '@/lib/buyer-scoring'
-import { verifyWithGPT4o, fallbackToGPT4o } from '@/lib/second-pass-verifier'
 
 // Schema for input validation
 const InputSchema = z.object({
@@ -14,137 +12,257 @@ const InputSchema = z.object({
 
 // Schema for LLM response validation
 const ResponseSchema = z.object({
-  buyer: z.string().nullable(),
-  rationale: z.string().nullable(),
-  confidence_score: z.number().min(0).max(1).nullable(),
-  strategic_fit_score: z.number().min(0).max(1).nullable(),
-  alternative_buyers: z.array(z.string()).nullable()
+  buyer: z.string().optional(),
+  rationale: z.string().optional(),
+  confidence_score: z.number().optional(),
+  strategic_fit_score: z.number().optional(),
+  alternative_buyers: z.array(z.string()).optional()
 })
 
-// Type definitions
 type InputData = z.infer<typeof InputSchema>
 type ResponseData = z.infer<typeof ResponseSchema>
 
-// In-memory cache (in production, use Redis or similar)
-const cache = new Map<string, { data: ResponseData; timestamp: number }>()
-const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
-
-// Ontology mapping for target normalization
-const TARGET_ONTOLOGY: Record<string, string> = {
-  'her2': 'ERBB2',
-  'her-2': 'ERBB2',
-  'her2/neu': 'ERBB2',
-  'egfr': 'EGFR',
-  'vegf': 'VEGFA',
-  'pd-1': 'PDCD1',
-  'pd1': 'PDCD1',
-  'pdl1': 'CD274',
-  'pd-l1': 'CD274',
-  'fcrn': 'FCGRT',
-  'fcgrn': 'FCGRT',
-  'il-17': 'IL17A',
-  'il17': 'IL17A',
-  'tnf-alpha': 'TNF',
-  'tnfa': 'TNF',
-  'jak': 'JAK1',
-  'jak1': 'JAK1',
-  'jak2': 'JAK2',
-  'btk': 'BTK',
-  'parp': 'PARP1',
-  'parp1': 'PARP1',
-  'cdk4/6': 'CDK4',
-  'cdk4': 'CDK4',
-  'cdk6': 'CDK6',
-  'pi3k': 'PIK3CA',
-  'mek': 'MAP2K1',
-  'braf': 'BRAF',
-  'kras': 'KRAS',
-  'alk': 'ALK',
-  'ros1': 'ROS1',
-  'met': 'MET',
-  'ret': 'RET',
-  'ntrk': 'NTRK1',
-  'bcl-2': 'BCL2',
-  'bcl2': 'BCL2',
-  'mcl-1': 'MCL1',
-  'mcl1': 'MCL1',
-  'bcl-xl': 'BCL2L1',
-  'bclxl': 'BCL2L1'
-}
-
-// Indication validation and normalization
-const VALID_INDICATIONS = new Set([
-  'breast cancer', 'lung cancer', 'colorectal cancer', 'prostate cancer', 'ovarian cancer',
-  'pancreatic cancer', 'gastric cancer', 'hepatocellular carcinoma', 'melanoma',
-  'multiple myeloma', 'leukemia', 'lymphoma', 'non-hodgkin lymphoma', 'hodgkin lymphoma',
-  'acute myeloid leukemia', 'chronic lymphocytic leukemia', 'acute lymphoblastic leukemia',
-  'rheumatoid arthritis', 'psoriasis', 'psoriatic arthritis', 'ankylosing spondylitis',
-  'inflammatory bowel disease', 'crohn disease', 'ulcerative colitis', 'multiple sclerosis',
-  'alzheimer disease', 'parkinson disease', 'huntington disease', 'amyotrophic lateral sclerosis',
-  'diabetes mellitus', 'type 1 diabetes', 'type 2 diabetes', 'obesity', 'nonalcoholic steatohepatitis',
-  'cystic fibrosis', 'sickle cell disease', 'hemophilia', 'myasthenia gravis', 'systemic lupus erythematosus',
-  'scleroderma', 'vasculitis', 'gout', 'osteoporosis', 'fibromyalgia', 'chronic pain',
-  'migraine', 'epilepsy', 'schizophrenia', 'bipolar disorder', 'major depressive disorder',
-  'anxiety disorders', 'autism spectrum disorder', 'attention deficit hyperactivity disorder',
-  'hypertension', 'heart failure', 'coronary artery disease', 'atrial fibrillation',
-  'chronic kidney disease', 'polycystic kidney disease', 'glomerulonephritis',
-  'asthma', 'chronic obstructive pulmonary disease', 'pulmonary fibrosis', 'pulmonary hypertension'
-])
-
-// Using enhanced pharma database from buyer-scoring.ts
-
-// Input enrichment functions
+// Enhanced target normalization
 function normalizeTarget(target: string): string {
-  const normalized = target.toLowerCase().trim()
-  return TARGET_ONTOLOGY[normalized] || target
+  const targetMap: Record<string, string> = {
+    'HER2': 'ERBB2',
+    'EGFR': 'ERBB1',
+    'VEGF': 'VEGFA',
+    'PD-1': 'PDCD1',
+    'CTLA-4': 'CTLA4',
+    'PDL1': 'CD274',
+    'BRAF': 'BRAF',
+    'ALK': 'ALK',
+    'ROS1': 'ROS1',
+    'NTRK': 'NTRK1'
+  }
+  return targetMap[target.toUpperCase()] || target
 }
+
+// Valid indications for validation
+const VALID_INDICATIONS = new Set([
+  'breast cancer', 'lung cancer', 'prostate cancer', 'colorectal cancer', 'melanoma',
+  'multiple myeloma', 'leukemia', 'lymphoma', 'ovarian cancer', 'pancreatic cancer',
+  'gastric cancer', 'bladder cancer', 'kidney cancer', 'liver cancer', 'brain cancer',
+  'alzheimer disease', 'parkinson disease', 'multiple sclerosis', 'amyotrophic lateral sclerosis',
+  'huntington disease', 'spinal muscular atrophy', 'duchenne muscular dystrophy',
+  'rheumatoid arthritis', 'psoriasis', 'inflammatory bowel disease', 'lupus',
+  'diabetes', 'obesity', 'hypertension', 'heart failure', 'atherosclerosis',
+  'hepatitis c', 'hiv', 'tuberculosis', 'malaria', 'covid-19',
+  'hemophilia', 'sickle cell disease', 'cystic fibrosis', 'gaucher disease'
+])
 
 function validateIndication(indication: string): { isValid: boolean; normalized: string } {
   const normalized = indication.toLowerCase().trim()
   return {
     isValid: VALID_INDICATIONS.has(normalized),
-    normalized: normalized
+    normalized
   }
 }
 
-function detectTypos(text: string): string[] {
-  const typos: string[] = []
-  const words = text.toLowerCase().split(/\s+/)
-  
-  // Simple typo detection (in production, use a proper spell checker)
-  const commonTypos: Record<string, string> = {
-    'cancer': 'cancer',
-    'cancr': 'cancer',
-    'oncology': 'oncology',
-    'oncolgy': 'oncology',
-    'immunology': 'immunology',
-    'immunolgy': 'immunology',
-    'cardiovascular': 'cardiovascular',
-    'cardiovasular': 'cardiovascular',
-    'neurology': 'neurology',
-    'neurolgy': 'neurology'
+// Enhanced pharma database with detailed scoring factors
+const ENHANCED_PHARMA_DATABASE = [
+  {
+    name: 'AstraZeneca',
+    therapeutic_focus: ['oncology', 'respiratory', 'cardiovascular', 'metabolic', 'immunology'],
+    pipeline_gaps: ['rare diseases', 'neurology', 'infectious diseases'],
+    recent_deals: ['antibody-drug conjugates', 'small molecules', 'cell therapy'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'high'
+  },
+  {
+    name: 'Roche',
+    therapeutic_focus: ['oncology', 'immunology', 'neurology', 'ophthalmology'],
+    pipeline_gaps: ['cardiovascular', 'respiratory', 'metabolic'],
+    recent_deals: ['biologics', 'small molecules', 'diagnostics'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'medium'
+  },
+  {
+    name: 'Pfizer',
+    therapeutic_focus: ['oncology', 'immunology', 'rare diseases', 'vaccines'],
+    pipeline_gaps: ['neurology', 'cardiovascular'],
+    recent_deals: ['small molecules', 'biologics', 'gene therapy'],
+    cash_position: 'very_strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'very_high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'high'
+  },
+  {
+    name: 'Novartis',
+    therapeutic_focus: ['oncology', 'immunology', 'ophthalmology', 'neuroscience'],
+    pipeline_gaps: ['cardiovascular', 'respiratory'],
+    recent_deals: ['cell therapy', 'gene therapy', 'small molecules'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'high'
+  },
+  {
+    name: 'Johnson & Johnson',
+    therapeutic_focus: ['oncology', 'immunology', 'infectious diseases', 'neuroscience'],
+    pipeline_gaps: ['respiratory', 'metabolic'],
+    recent_deals: ['biologics', 'cell therapy', 'small molecules'],
+    cash_position: 'very_strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'very_high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'high'
+  },
+  {
+    name: 'Merck',
+    therapeutic_focus: ['oncology', 'vaccines', 'infectious diseases', 'cardiovascular'],
+    pipeline_gaps: ['neurology', 'ophthalmology'],
+    recent_deals: ['small molecules', 'biologics', 'vaccines'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'medium'
+  },
+  {
+    name: 'Bristol-Myers Squibb',
+    therapeutic_focus: ['oncology', 'immunology', 'cardiovascular'],
+    pipeline_gaps: ['neurology', 'respiratory'],
+    recent_deals: ['small molecules', 'biologics', 'cell therapy'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'medium'
+  },
+  {
+    name: 'Amgen',
+    therapeutic_focus: ['oncology', 'cardiovascular', 'neuroscience', 'inflammation'],
+    pipeline_gaps: ['respiratory', 'metabolic'],
+    recent_deals: ['biologics', 'small molecules', 'bispecifics'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'medium',
+    regulatory_expertise: 'good',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'medium'
+  },
+  {
+    name: 'Gilead Sciences',
+    therapeutic_focus: ['oncology', 'infectious diseases', 'inflammation'],
+    pipeline_gaps: ['neurology', 'cardiovascular'],
+    recent_deals: ['cell therapy', 'small molecules', 'biologics'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'high',
+    regulatory_expertise: 'excellent',
+    commercial_infrastructure: 'excellent',
+    recent_deal_activity: 'high'
+  },
+  {
+    name: 'Regeneron',
+    therapeutic_focus: ['oncology', 'ophthalmology', 'inflammation', 'rare diseases'],
+    pipeline_gaps: ['neurology', 'cardiovascular'],
+    recent_deals: ['biologics', 'gene therapy', 'small molecules'],
+    cash_position: 'strong',
+    geographic_reach: 'global',
+    deal_size_tolerance: 'medium',
+    regulatory_expertise: 'good',
+    commercial_infrastructure: 'good',
+    recent_deal_activity: 'medium'
   }
-  
-  words.forEach(word => {
-    if (commonTypos[word] && commonTypos[word] !== word) {
-      typos.push(`${word} -> ${commonTypos[word]}`)
-    }
-  })
-  
-  return typos
+]
+
+// Fine-grained buyer scoring
+function calculateBuyerScores(assetData: InputData): any[] {
+  const scores: any[] = []
+
+  for (const company of ENHANCED_PHARMA_DATABASE) {
+    let totalScore = 0
+    
+    // Therapeutic alignment (25%)
+    const therapeuticAlignment = company.therapeutic_focus.includes(assetData.therapeuticArea.toLowerCase()) ? 1.0 : 0.0
+    totalScore += therapeuticAlignment * 0.25
+    
+    // Pipeline gap (20%)
+    const pipelineGap = company.pipeline_gaps.some(gap => 
+      assetData.indication.toLowerCase().includes(gap) || gap.includes(assetData.indication.toLowerCase())
+    ) ? 1.0 : 0.0
+    totalScore += pipelineGap * 0.20
+    
+    // Cash position (15%)
+    const cashPosition = company.cash_position === 'very_strong' ? 1.0 : 
+                        company.cash_position === 'strong' ? 0.8 : 0.5
+    totalScore += cashPosition * 0.15
+    
+    // Deal size tolerance (10%)
+    const dealSizeTolerance = company.deal_size_tolerance === 'very_high' ? 1.0 :
+                             company.deal_size_tolerance === 'high' ? 0.8 : 0.5
+    totalScore += dealSizeTolerance * 0.10
+    
+    // Geographic reach (10%)
+    const geographicReach = company.geographic_reach === 'global' ? 1.0 : 0.6
+    totalScore += geographicReach * 0.10
+    
+    // Recent deal activity (8%)
+    const recentDealActivity = company.recent_deal_activity === 'high' ? 1.0 :
+                              company.recent_deal_activity === 'medium' ? 0.7 : 0.4
+    totalScore += recentDealActivity * 0.08
+    
+    // Regulatory expertise (6%)
+    const regulatoryExpertise = company.regulatory_expertise === 'excellent' ? 1.0 :
+                               company.regulatory_expertise === 'good' ? 0.8 : 0.5
+    totalScore += regulatoryExpertise * 0.06
+    
+    // Commercial infrastructure (6%)
+    const commercialInfrastructure = company.commercial_infrastructure === 'excellent' ? 1.0 :
+                                   company.commercial_infrastructure === 'good' ? 0.8 : 0.5
+    totalScore += commercialInfrastructure * 0.06
+
+    scores.push({
+      name: company.name,
+      totalScore,
+      breakdown: {
+        therapeuticAlignment,
+        pipelineGap,
+        cashPosition,
+        dealSizeTolerance,
+        geographicReach,
+        recentDealActivity,
+        regulatoryExpertise,
+        commercialInfrastructure
+      }
+    })
+  }
+
+  return scores.sort((a, b) => b.totalScore - a.totalScore)
 }
 
-// Retrieval layer - use fine-grained scoring
+// Retrieval layer - find top buyers
 function findTopBuyers(assetData: InputData): any[] {
   const buyerScores = calculateBuyerScores(assetData)
   return buyerScores.slice(0, 5).map(score => ({
-    ...ENHANCED_PHARMA_DATABASE.find((company: any) => company.name === score.name),
+    ...ENHANCED_PHARMA_DATABASE.find(company => company.name === score.name),
     similarity_score: score.totalScore,
     score_breakdown: score.breakdown
   }))
 }
 
 // Cache management
+const cache = new Map()
+const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+
 function getCacheKey(data: InputData): string {
   const normalized = {
     therapeuticArea: data.therapeuticArea.toLowerCase().trim(),
@@ -168,8 +286,6 @@ function getCachedResponse(cacheKey: string): ResponseData | null {
 function setCachedResponse(cacheKey: string, data: ResponseData): void {
   cache.set(cacheKey, { data, timestamp: Date.now() })
 }
-
-// Strategic fit calculation now handled by buyer-scoring.ts
 
 export async function POST(req: NextRequest) {
   console.log('[API] Received POST /api/perplexity')
@@ -203,49 +319,43 @@ export async function POST(req: NextRequest) {
       }, { status: 400 })
     }
     
-    // Detect typos
-    const typos = detectTypos(validatedData.therapeuticArea + ' ' + validatedData.indication)
-    if (typos.length > 0) {
-      console.log('[API] Detected potential typos:', typos)
-    }
-    
-         // Retrieval layer - find top buyers
-     const topBuyers = findTopBuyers(enrichedData)
-     const buyerScores = calculateBuyerScores(enrichedData)
-     console.log('[API] Top buyers found:', topBuyers.map(b => ({ name: b.name, score: b.similarity_score })))
+    // Retrieval layer - find top buyers
+    const topBuyers = findTopBuyers(enrichedData)
+    console.log('[API] Top buyers found:', topBuyers.map(b => ({ name: b.name, score: b.similarity_score })))
     
     // Enhanced prompt engineering
-    const buyerContext = topBuyers.map(buyer => 
-      `${buyer.name}: Focus areas: ${buyer.therapeutic_focus.join(', ')}, Pipeline gaps: ${buyer.pipeline_gaps.join(', ')}, Recent deals: ${buyer.recent_deals.join(', ')}, Cash: ${buyer.cash_position}, Deal tolerance: ${buyer.deal_size_tolerance}`
-    ).join('\n')
+    const buyerContext = topBuyers.map(buyer => {
+      const focus = buyer.therapeutic_focus?.join(', ') || 'Unknown'
+      const gaps = buyer.pipeline_gaps?.join(', ') || 'Unknown'
+      const deals = buyer.recent_deals?.join(', ') || 'Unknown'
+      const cash = buyer.cash_position || 'Unknown'
+      const tolerance = buyer.deal_size_tolerance || 'Unknown'
+      
+      return `${buyer.name}: Focus areas: ${focus}, Pipeline gaps: ${gaps}, Recent deals: ${deals}, Cash: ${cash}, Deal tolerance: ${tolerance}`
+    }).join('\n')
     
-    const enhancedPrompt = `You are a senior business development expert in pharmaceutical M&A with deep knowledge of company pipelines, strategic priorities, and deal-making patterns.
+    const enhancedPrompt = `You are a senior business development expert in pharmaceutical M&A. Analyze this asset and recommend a buyer.
 
 ASSET DETAILS:
 - Therapeutic Area: ${enrichedData.therapeuticArea}
 - Indication: ${enrichedData.indication}
-- Target: ${enrichedData.target} (normalized from ${validatedData.target})
+- Target: ${enrichedData.target}
 - Modality: ${enrichedData.modality}
 - Asset Stage: ${enrichedData.assetStage}
 
-TOP POTENTIAL BUYERS (ranked by strategic fit):
+TOP POTENTIAL BUYERS:
 ${buyerContext}
 
-TASK: Analyze this asset and identify the best strategic buyer. Follow this process:
-1. First, rank the top 3 buyers based on strategic fit, pipeline gaps, and deal-making history
-2. Select the best buyer and provide a detailed rationale
-3. Consider therapeutic area alignment, pipeline gaps, cash position, and recent deal themes
+TASK: Select the best strategic buyer from the list above and provide a rationale.
 
 RESPONSE FORMAT (strict JSON):
 {
-  "buyer": "Company Name or null if no suitable buyer",
-  "rationale": "Detailed strategic rationale or null",
-  "confidence_score": 0.0-1.0 or null,
-  "strategic_fit_score": 0.0-1.0 or null,
-  "alternative_buyers": ["Company1", "Company2"] or null
-}
-
-If you cannot fill a field, return null. Be precise and evidence-based.`
+  "buyer": "Company Name",
+  "rationale": "Strategic rationale",
+  "confidence_score": 0.8,
+  "strategic_fit_score": 0.8,
+  "alternative_buyers": ["Company1", "Company2"]
+}`
 
     const apiKey = process.env.PERPLEXITY_API_KEY
     if (!apiKey) {
@@ -266,11 +376,9 @@ If you cannot fill a field, return null. Be precise and evidence-based.`
           { role: 'system', content: 'You are a business development expert in pharma M&A. Provide precise, evidence-based analysis.' },
           { role: 'user', content: enhancedPrompt },
         ],
-        max_tokens: 1024, // Increased for more detailed reasoning
-        temperature: 0.2, // Lower for consistency
-        top_p: 0.8, // Controlled randomness
-        frequency_penalty: 0.1,
-        presence_penalty: 0.1
+        max_tokens: 1024,
+        temperature: 0.2,
+        top_p: 0.8
       }),
     })
     
@@ -278,11 +386,11 @@ If you cannot fill a field, return null. Be precise and evidence-based.`
     if (!response.ok) {
       const errorText = await response.text()
       console.error('[API] Perplexity API error:', errorText)
-      return NextResponse.json({ error: 'Perplexity API error.' }, { status: 500 })
+      return NextResponse.json({ error: 'Perplexity API error: ' + errorText }, { status: 500 })
     }
     
     const data = await response.json()
-    console.log('[API] Perplexity API response JSON:', data)
+    console.log('[API] Perplexity API response received')
     
     // Enhanced response parsing with Zod validation
     let parsedResponse: ResponseData
@@ -301,53 +409,17 @@ If you cannot fill a field, return null. Be precise and evidence-based.`
       return NextResponse.json({ error: 'Could not parse Perplexity response.' }, { status: 500 })
     }
     
-         // Second-pass verification with GPT-4o
-     console.log('[API] Starting second-pass verification')
-     const verificationContext = {
-       assetData: enrichedData,
-       llmResponse: {
-         buyer: parsedResponse.buyer || 'Unknown',
-         rationale: parsedResponse.rationale || 'No rationale provided',
-         confidence_score: parsedResponse.confidence_score,
-         strategic_fit_score: parsedResponse.strategic_fit_score,
-         alternative_buyers: parsedResponse.alternative_buyers
-       },
-       evidence: {
-         companyProfiles: topBuyers,
-         topBuyers: topBuyers,
-         strategicFitScores: buyerScores
-       }
-     }
-     
-     const verificationResult = await verifyWithGPT4o(verificationContext)
-     console.log('[API] Verification result:', verificationResult)
-     
-     // If verification fails, fallback to GPT-4o
-     if (!verificationResult.passed) {
-       console.log('[API] Verification failed, falling back to GPT-4o')
-       try {
-         const fallbackResponse = await fallbackToGPT4o(enrichedData, {
-           companyProfiles: topBuyers
-         })
-         parsedResponse = fallbackResponse
-       } catch (fallbackError) {
-         console.error('[API] Fallback to GPT-4o failed:', fallbackError)
-         // Continue with original response if fallback fails
-       }
-     }
-     
-     // Deterministic buyer selection - override LLM choice with top scorer
-     const deterministicTopBuyer = getTopBuyers(enrichedData, 1)[0]
-     if (deterministicTopBuyer) {
-       console.log('[API] Deterministic buyer selection:', deterministicTopBuyer.name)
-       parsedResponse.buyer = deterministicTopBuyer.name
-       parsedResponse.strategic_fit_score = deterministicTopBuyer.totalScore
-       
-       // Let LLM write rationale but use deterministic buyer
-       if (!parsedResponse.rationale || parsedResponse.rationale.includes('null')) {
-         parsedResponse.rationale = `Strategic fit analysis indicates ${deterministicTopBuyer.name} as the optimal buyer based on therapeutic alignment (${(deterministicTopBuyer.breakdown.therapeuticAlignment * 100).toFixed(1)}%), pipeline gap match (${(deterministicTopBuyer.breakdown.pipelineGap * 100).toFixed(1)}%), and deal size tolerance (${(deterministicTopBuyer.breakdown.dealSizeTolerance * 100).toFixed(1)}%).`
-       }
-     }
+    // Deterministic buyer selection - override LLM choice with top scorer
+    const deterministicTopBuyer = topBuyers[0]
+    if (deterministicTopBuyer && (!parsedResponse.buyer || parsedResponse.buyer === 'null')) {
+      console.log('[API] Using deterministic buyer selection:', deterministicTopBuyer.name)
+      parsedResponse.buyer = deterministicTopBuyer.name
+      parsedResponse.strategic_fit_score = deterministicTopBuyer.similarity_score
+      
+      if (!parsedResponse.rationale || parsedResponse.rationale === 'null') {
+        parsedResponse.rationale = `Strategic fit analysis indicates ${deterministicTopBuyer.name} as the optimal buyer based on therapeutic alignment and pipeline gaps.`
+      }
+    }
     
     // Cache the response
     setCachedResponse(cacheKey, parsedResponse)
@@ -362,6 +434,6 @@ If you cannot fill a field, return null. Be precise and evidence-based.`
         details: err.errors 
       }, { status: 400 })
     }
-    return NextResponse.json({ error: 'Server error.' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error: ' + (err instanceof Error ? err.message : 'Unknown error') }, { status: 500 })
   }
 } 
