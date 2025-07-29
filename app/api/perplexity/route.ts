@@ -7,14 +7,14 @@ import { assessResearchDepth, generateDepthSpecificPrompt, assessResearchQuality
 import { generateEnhancedPrompt, validateEnhancedResponse, DEFAULT_ENHANCED_CONFIG } from '@/lib/enhanced-prompt-engine'
 import { processEnhancedResponse } from '@/lib/enhanced-openai-validator'
 
-// Schema for input validation
+// Universal input schema that accepts ANY input for research
 const InputSchema = z.object({
-  therapeuticArea: z.string().min(1, "Therapeutic area is required"),
-  indication: z.string().min(1, "Indication is required"),
-  target: z.string().min(1, "Target is required"),
-  modality: z.string().min(1, "Modality is required"),
-  assetStage: z.string().min(1, "Asset stage is required")
-})
+  therapeuticArea: z.string().optional(),
+  indication: z.string().optional(),
+  target: z.string().optional(),
+  modality: z.string().optional(),
+  assetStage: z.string().optional()
+}).passthrough()
 
 // Schema for LLM response validation
 const ResponseSchema = z.object({
@@ -185,6 +185,20 @@ const ResponseSchema = z.object({
 
 type InputData = z.infer<typeof InputSchema>
 type ResponseData = z.infer<typeof ResponseSchema>
+
+// Universal validation - accepts ANY input
+function validateInput(data: InputData): { isValid: boolean; normalized: InputData } {
+  return {
+    isValid: true, // Accept ANY input for research
+    normalized: {
+      therapeuticArea: data.therapeuticArea || '',
+      indication: data.indication || '',
+      target: data.target || '',
+      modality: data.modality || '',
+      assetStage: data.assetStage || ''
+    }
+  }
+}
 
 // Comprehensive target normalization with extensive pharmaceutical target mapping
 function normalizeTarget(target: string): string {
@@ -585,7 +599,7 @@ function detectTypos(text: string): string[] {
 // Enhanced buyer scoring with improved algorithm
 import { calculateBuyerScores, getTopBuyers } from '@/lib/buyer-scoring'
 
-function findTopBuyers(assetData: InputData): any[] {
+function findTopBuyers(assetData: { therapeuticArea: string; indication: string; target: string; modality: string; assetStage: string }): any[] {
   try {
     const buyerScores = calculateBuyerScores(assetData)
     return buyerScores.slice(0, 5).map(score => ({
@@ -604,13 +618,13 @@ const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
 const MAX_CACHE_SIZE = 1000
 const cache = new Map<string, { data: ResponseData; timestamp: number }>()
 
-function getCacheKey(data: InputData): string {
+function getCacheKey(data: { therapeuticArea: string; indication: string; target: string; modality: string; assetStage: string }): string {
   const normalized = {
-    therapeuticArea: data.therapeuticArea.toLowerCase().trim(),
-    indication: data.indication.toLowerCase().trim(),
-    target: normalizeTarget(data.target),
-    modality: data.modality.toLowerCase().trim(),
-    assetStage: data.assetStage.toLowerCase().trim()
+    therapeuticArea: data.therapeuticArea?.toLowerCase().trim() || '',
+    indication: data.indication?.toLowerCase().trim() || '',
+    target: normalizeTarget(data.target || ''),
+    modality: data.modality?.toLowerCase().trim() || '',
+    assetStage: data.assetStage?.toLowerCase().trim() || ''
   }
   return JSON.stringify(normalized)
 }
@@ -640,7 +654,7 @@ function setCachedResponse(cacheKey: string, data: ResponseData): void {
 }
 
 // Adaptive model selection based on query complexity with optimized timeouts
-function selectOptimalModel(assetData: InputData): { model: string; isDeep: boolean; timeout: number } {
+function selectOptimalModel(assetData: { therapeuticArea: string; indication: string; target: string; modality: string; assetStage: string }): { model: string; isDeep: boolean; timeout: number } {
   const complexity = calculateQueryComplexity(assetData)
   
   if (complexity === 'high') {
@@ -652,19 +666,19 @@ function selectOptimalModel(assetData: InputData): { model: string; isDeep: bool
   }
 }
 
-function calculateQueryComplexity(assetData: InputData): 'low' | 'medium' | 'high' {
+function calculateQueryComplexity(assetData: { therapeuticArea: string; indication: string; target: string; modality: string; assetStage: string }): 'low' | 'medium' | 'high' {
   let score = 0
   
   // Asset stage complexity
-  if (assetData.assetStage.includes('phase 1')) score += 1
-  else if (assetData.assetStage.includes('phase 2')) score += 2
-  else if (assetData.assetStage.includes('phase 3')) score += 3
+  if (assetData.assetStage?.includes('phase 1')) score += 1
+  else if (assetData.assetStage?.includes('phase 2')) score += 2
+  else if (assetData.assetStage?.includes('phase 3')) score += 3
   
   // Modality complexity
-  if (assetData.modality.includes('antibody-drug conjugate')) score += 3
-  else if (assetData.modality.includes('cell therapy')) score += 3
-  else if (assetData.modality.includes('gene therapy')) score += 3
-  else if (assetData.modality.includes('monoclonal antibody')) score += 2
+  if (assetData.modality?.includes('antibody-drug conjugate')) score += 3
+  else if (assetData.modality?.includes('cell therapy')) score += 3
+  else if (assetData.modality?.includes('gene therapy')) score += 3
+  else if (assetData.modality?.includes('monoclonal antibody')) score += 2
   else score += 1
   
   // Therapeutic area complexity
@@ -678,7 +692,7 @@ function calculateQueryComplexity(assetData: InputData): 'low' | 'medium' | 'hig
 }
 
 // Comprehensive domain selection for expert-level pharmaceutical research
-function selectOptimalDomains(assetData: InputData): string[] {
+function selectOptimalDomains(assetData: { therapeuticArea: string; indication: string; target: string; modality: string; assetStage: string }): string[] {
   const baseDomains = [
     "evaluatepharma.com",
     "clinicaltrials.gov",
@@ -768,8 +782,19 @@ export async function POST(req: NextRequest) {
     const inputData = validation.data
     console.log('[API] Validated request body:', inputData)
     
+    // Universal validation - accepts ANY input
+    const inputValidation = validateInput(inputData)
+    if (!inputValidation.isValid) {
+      return NextResponse.json({
+        error: 'Input validation failed',
+        details: 'This should never happen with universal acceptance'
+      }, { status: 400 })
+    }
+    
+    const normalizedData = inputValidation.normalized
+    
     // Check cache first
-    const cacheKey = getCacheKey(inputData)
+    const cacheKey = getCacheKey(normalizedData)
     const cachedResponse = getCachedResponse(cacheKey)
     const cacheHit = !!cachedResponse
     
@@ -782,7 +807,7 @@ export async function POST(req: NextRequest) {
         responseTime,
         cacheHit: true,
         modelUsed: 'cached',
-        complexity: calculateQueryComplexity(inputData),
+        complexity: calculateQueryComplexity(normalizedData),
         verificationPassed: true,
         confidenceScore: cachedResponse.confidence_score || 0.8,
         hasSpecificData: true
@@ -792,29 +817,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Enhanced data validation and enrichment
-    const enrichment = enrichAssetData(inputData)
-    const dataQualityScore = calculateDataQualityScore(enrichment)
-    
-    // Check overall data quality
-    if (dataQualityScore < 0.6) {
-      return NextResponse.json({
-        error: 'Low data quality detected',
-        suggestions: enrichment.therapeuticArea.suggestions.concat(
-          enrichment.indication.suggestions,
-          enrichment.target.suggestions,
-          enrichment.modality.suggestions,
-          enrichment.assetStage.suggestions
-        ).slice(0, 5),
-        warnings: [
-          enrichment.therapeuticArea.warnings,
-          enrichment.indication.warnings,
-          enrichment.target.warnings,
-          enrichment.modality.warnings,
-          enrichment.assetStage.warnings
-        ].flat().slice(0, 3),
-        overallConfidence: dataQualityScore
-      }, { status: 400 })
-    }
+    const enrichment = enrichAssetData(normalizedData)
     
     // Use enriched data
     const enrichedData = {
@@ -842,7 +845,7 @@ export async function POST(req: NextRequest) {
       `${index + 1}. ${buyer.name} (Strategic Fit Score: ${buyer.score.toFixed(2)})`
     ).join('\n')
     
-        // Generate enhanced prompt with unblurred sections
+    // Generate enhanced prompt with unblurred sections
     const enhancedPrompt = generateEnhancedPrompt(enrichedData, researchDepth, buyerContext, DEFAULT_ENHANCED_CONFIG)
 
     const apiKey = process.env.PERPLEXITY_API_KEY
